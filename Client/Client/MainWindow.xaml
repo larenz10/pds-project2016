@@ -1,0 +1,50 @@
+﻿<Window x:Class="Client.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Client"
+        mc:Ignorable="d"
+        Title="Client" Height="350" Width="630.475">
+    <Grid>
+        <TextBox x:Name="indirizzo" 
+                 HorizontalAlignment="Left" 
+                 Height="23" Margin="92,10,0,0" 
+                 TextWrapping="Wrap" 
+                 VerticalAlignment="Top" Width="120"/>
+        <TextBlock x:Name="textBlock" 
+        	       HorizontalAlignment="Left" 
+        	       Margin="10,10,0,0" TextWrapping="Wrap" 
+        	       VerticalAlignment="Top" Height="23" 
+        	       Width="63" Text="Indirizzo IP"/>
+        <TextBox x:Name="porta" 
+                 HorizontalAlignment="Left" 
+                 Height="23" Margin="292,10,0,0" 
+                 TextWrapping="Wrap" VerticalAlignment="Top" Width="68"/>
+        <TextBlock x:Name="textBlock1" 
+                   HorizontalAlignment="Left" Margin="241,10,0,0" 
+                   TextWrapping="Wrap" Text="Porta" 
+                   VerticalAlignment="Top" Height="23"/>
+        <Button x:Name="connetti" 
+                Content="Connetti" 
+                HorizontalAlignment="Left" Margin="537,10,0,0" 
+                VerticalAlignment="Top" Width="75" Height="23" Click="connetti_Click"/>
+        <TextBox x:Name="testo" 
+                 HorizontalAlignment="Left" Height="243" 
+                 Margin="10,38,0,0" TextWrapping="Wrap" 
+                 VerticalAlignment="Top" Width="602"/>
+        <TextBlock x:Name="textBlock2" 
+                   HorizontalAlignment="Left" Margin="10,286,0,0" 
+                   TextWrapping="Wrap" Text="Messaggio" 
+                   VerticalAlignment="Top" Height="23" Width="63"/>
+        <TextBox x:Name="messaggio" 
+                 HorizontalAlignment="Left" Height="23" 
+                 Margin="92,286,0,0" TextWrapping="Wrap" 
+                 VerticalAlignment="Top" Width="440"/>
+        <Button x:Name="invia" 
+                Content="Invia" HorizontalAlignment="Left" 
+                Margin="537,286,0,10" 
+                Width="75" Click="invia_Click"/>
+    </Grid>
+
+</Window>
