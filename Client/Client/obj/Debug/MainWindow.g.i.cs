@@ -91,23 +91,7 @@ namespace Client {
         
         #line 36 "..\..\MainWindow.xaml"
         [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1823:AvoidUnusedPrivateFields")]
-        internal System.Windows.Controls.TextBlock textBlock2;
-        
-        #line default
-        #line hidden
-        
-        
-        #line 40 "..\..\MainWindow.xaml"
-        [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1823:AvoidUnusedPrivateFields")]
-        internal System.Windows.Controls.TextBox messaggio;
-        
-        #line default
-        #line hidden
-        
-        
-        #line 44 "..\..\MainWindow.xaml"
-        [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1823:AvoidUnusedPrivateFields")]
-        internal System.Windows.Controls.Button invia;
+        internal System.Windows.Controls.Button listaApp;
         
         #line default
         #line hidden
@@ -167,16 +151,10 @@ namespace Client {
             this.testo = ((System.Windows.Controls.TextBox)(target));
             return;
             case 7:
-            this.textBlock2 = ((System.Windows.Controls.TextBlock)(target));
-            return;
-            case 8:
-            this.messaggio = ((System.Windows.Controls.TextBox)(target));
-            return;
-            case 9:
-            this.invia = ((System.Windows.Controls.Button)(target));
+            this.listaApp = ((System.Windows.Controls.Button)(target));
             
-            #line 47 "..\..\MainWindow.xaml"
-            this.invia.Click += new System.Windows.RoutedEventHandler(this.invia_Click);
+            #line 38 "..\..\MainWindow.xaml"
+            this.listaApp.Click += new System.Windows.RoutedEventHandler(this.listaApp_Click);
             
             #line default
             #line hidden

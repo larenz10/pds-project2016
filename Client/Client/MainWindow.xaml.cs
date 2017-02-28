@@ -87,10 +87,44 @@ namespace Client
             }    
         }
 
+        /*
+         * Questo metodo si occupa di inviare al server una richiesta
+         * per ottenere la lista delle applicazioni in esecuzione. Se
+         * il client non è connesso, ritorna immediatamente. Altrimenti,
+         * aspetta la risposta del server e la mostra sulla textbox.
+         */
+        private void listaApp_Click(object sender, RoutedEventArgs e)
+        {
+            if (!connected)
+            {
+                testo.AppendText("Devi essere connesso per poter inviare richieste!\n");
+                return;
+            }
+            try
+            {
+                byte[] buffer = Encoding.ASCII.GetBytes("listaApp");
+                stream = client.GetStream();
+                stream.Write(buffer, 0, buffer.Length);
+                testo.AppendText("Richiesta inviata al server.\n");
+            }
+            catch (Exception ex)
+            {
+                testo.AppendText("Errore: " + ex.StackTrace);
+                client.Close();
+                client = null;
+                stream.Close();
+                stream = null;
+                connected = false;
+                connetti.Content = "Connetti";
+            }
+        }
+
         /* Questo metodo si occupa di inviare al server il messaggio contenuto
          * nel campo corrispondente. Se non è connesso, ritorna immediatamente.
-         * Aspetta (per ora) la risposta dal server.
-         */
+         * Aspetta la risposta dal server. 
+         * Non implementato perché inutile nell'ambito del progetto.
+         * Utilizzato solo per test preliminari.
+                  
         private void invia_Click(object sender, RoutedEventArgs e)
         {
             if (!connected) {
@@ -108,7 +142,7 @@ namespace Client
 
                 while (totali < buffer.Length)
                 {
-                    /* Gestione chiusura preventiva */
+                    // Gestione chiusura preventiva
                     if ((ricevuti = stream.Read(buffer, totali,
                         buffer.Length - totali)) == 0)
                     {
@@ -130,6 +164,7 @@ namespace Client
                 connected = false;
                 connetti.Content = "Connetti";
             }
-        }
+        } 
+        */
     }
 }
