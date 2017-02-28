@@ -93,7 +93,7 @@ namespace Client
          * il client non è connesso, ritorna immediatamente. Altrimenti,
          * aspetta la risposta del server e la mostra sulla textbox.
          */
-        private void listaApp_Click(object sender, RoutedEventArgs e)
+        private async void listaApp_Click(object sender, RoutedEventArgs e)
         {
             if (!connected)
             {
@@ -106,6 +106,7 @@ namespace Client
                 stream = client.GetStream();
                 stream.Write(buffer, 0, buffer.Length);
                 testo.AppendText("Richiesta inviata al server.\n");
+                List apps = await getList();
             }
             catch (Exception ex)
             {
@@ -117,6 +118,11 @@ namespace Client
                 connected = false;
                 connetti.Content = "Connetti";
             }
+        }
+
+        public async Task<List> getList()
+        {
+
         }
 
         /* Questo metodo si occupa di inviare al server il messaggio contenuto
