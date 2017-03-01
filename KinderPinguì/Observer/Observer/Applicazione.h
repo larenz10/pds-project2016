@@ -21,11 +21,15 @@ public:
 		nome = n;
 		processo = p;
 		icona = i;
-		focus = true;
+		focus = false;
 	}
 	//Distruttore
 	virtual ~Applicazione() {
 		delete nome;
 		nome = nullptr;
+	}
+	
+	void setFocus(bool focus) {
+		this->focus = focus;
 	}
 };
