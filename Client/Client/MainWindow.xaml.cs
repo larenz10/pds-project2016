@@ -70,8 +70,10 @@ namespace Client
                 catch (Exception ex)
                 {
                     testo.AppendText("Errore: " + ex.StackTrace + "\n");
-                    //client.Close();
-                    client = null;
+                    if (client != nullptr) {
+                        client.Close();
+                        client = nullptr;
+                    }
                     connected = false;
                     connetti.Content = "Connetti";
                 }
