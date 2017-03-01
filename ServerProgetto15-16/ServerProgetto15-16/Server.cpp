@@ -1,8 +1,11 @@
 #include <winsock2.h>
 #include <ws2tcpip.h>
+#include <windows.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <iostream>
+#include <list>
+#include "Applicazione.h"
 
 // Need to link with Ws2_32.lib
 #pragma comment (lib, "Ws2_32.lib")
@@ -23,7 +26,41 @@ class Server {
 	char recvbuf[DEFAULT_BUFLEN];
 	int recvbuflen = DEFAULT_BUFLEN;
 
+	static std::list<Applicazione> applicazioni;
+
 public:
+
+
+	static BOOL CALLBACK enumWindowsProc(HWND hWnd, LPARAM lParam) {
+		BOOL focus = false;
+		LPTSTR *windowName;
+		DWORD pid;
+		HICON icon;
+
+		/* leggo le info dell'applicazione solo se è dotata di interfaccia grafica */
+		if (IsWindowVisible(hWnd) != 0) {	/*	c'è interfaccia grafica	*/
+			windowName = (LPTSTR*)malloc((GetWindowTextLength(hWnd) + 1) * sizeof(LPTSTR));	/*	nome dell'applicazione	*/
+			if (GetWindowText(hWnd, (LPTSTR)windowName, GetWindowTextLength(hWnd) + 1) != 0) {
+				GetWindowThreadProcessId(hWnd, &pid);	/*	processo che gestisce l'applicazione */
+
+				printf("\nnome applicazione: %ws\n", (wchar_t*)windowName);
+				printf("pid applicazione: %ld\n", pid);
+
+				icon = (HICON)GetClassLongPtr(hWnd, GCLP_HICON); /* NULL nel caso l'applicazione non abbia un'icona */
+
+																 /* riempo la classe applicazione e la inserisco nella lista delle applicazioni attive */
+				Applicazione app = Applicazione(windowName, pid, icon);
+
+				if (hWnd == GetForegroundWindow()) /* l'applicazione considerata è quella con focus */
+					app.setFocus(true);
+
+				applicazioni.push_back(app);
+			}
+			free(windowName);
+		}
+		return true;
+	}
+
 	int serverSetup(PCSTR port) {
 		int result;
 
@@ -101,40 +138,15 @@ public:
 		WSACleanup();
 	}
 
-	/*
-	BOOL CALLBACK myWindowsProc(HWND hwnd, LPARAM lParam){
-
-		char title[80];
-		GetWindowText(hwnd, (LPWSTR) title, sizeof(title));
-		printf("window titl: %s\n", title);
-		return TRUE;
-	}
-
-
 	void getApplicationInfo() {
-		EnumWindows(&myWindowsProc, NULL);
+		EnumWindows(enumWindowsProc, (LPARAM)NULL);
 		return;
-	}*/
+	}
 	
 };
 
-BOOL CALLBACK EnumWindowsProc(HWND hwnd, LPARAM lParam)
-{
-	std::cout << "fin qua bene" << std::endl;
-		std::wstring wnd_title[255];// = new std::wstring[255];
-		GetWindowText(hwnd, (LPWSTR)wnd_title, sizeof(wnd_title));
-		std::cout << wnd_title << std::endl;
-	return true; // function must return true if you want to continue enumeration
-}
-
-
-void getApplicationInfo() {
-	EnumWindows(EnumWindowsProc, NULL);
-	return;
-}
 
 int main() {
-	//EnumWindows(EnumWindowsProc, NULL);
 	Server myServer;
 	myServer.serverSetup("1500"); 
 	while (1)
