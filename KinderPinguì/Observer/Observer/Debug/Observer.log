@@ -1,0 +1,125 @@
+﻿  main.cpp
+d:\documenti\github\pds-hopeless\kinderpinguì\observer\observer\applicazione.h(18): error C2143: errore di sintassi: ';' mancante prima di '*'
+d:\documenti\github\pds-hopeless\kinderpinguì\observer\observer\applicazione.h(18): error C4430: identificatore di tipo mancante, verrà utilizzato int. Nota: default-int non è più supportato in C++
+d:\documenti\github\pds-hopeless\kinderpinguì\observer\observer\applicazione.h(18): error C2238: token imprevisti prima di ';'
+d:\documenti\github\pds-hopeless\kinderpinguì\observer\observer\applicazione.h(27): error C2061: errore di sintassi: identificatore 'Server'
+d:\documenti\github\pds-hopeless\kinderpinguì\observer\observer\main.cpp(7): error C2661: 'Applicazione::Applicazione': nessuna funzione in overload accetta 2 argomenti
+d:\documenti\github\pds-hopeless\kinderpinguì\observer\observer\main.cpp(8): error C2661: 'Applicazione::Applicazione': nessuna funzione in overload accetta 2 argomenti
+d:\documenti\github\pds-hopeless\kinderpinguì\observer\observer\main.cpp(9): error C2661: 'Applicazione::Applicazione': nessuna funzione in overload accetta 2 argomenti
+  Server.cpp
+d:\documenti\github\pds-hopeless\kinderpinguì\observer\observer\applicazione.h(18): error C2143: errore di sintassi: ';' mancante prima di '*'
+d:\documenti\github\pds-hopeless\kinderpinguì\observer\observer\applicazione.h(18): error C4430: identificatore di tipo mancante, verrà utilizzato int. Nota: default-int non è più supportato in C++
+d:\documenti\github\pds-hopeless\kinderpinguì\observer\observer\applicazione.h(18): error C2238: token imprevisti prima di ';'
+d:\documenti\github\pds-hopeless\kinderpinguì\observer\observer\applicazione.h(27): error C2061: errore di sintassi: identificatore 'Server'
+d:\documenti\github\pds-hopeless\kinderpinguì\observer\observer\server.cpp(21): error C2679: '<<' binario: non è stato trovato alcun operatore che accetti un operando destro di tipo 'std::string'. È anche possibile che non vi siano conversioni accettabili.
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\ostream(497): note: potrebbe essere 'std::basic_ostream<char,std::char_traits<char>> &std::basic_ostream<char,std::char_traits<char>>::operator <<(std::basic_streambuf<char,std::char_traits<char>> *)'
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\ostream(477): note: o 'std::basic_ostream<char,std::char_traits<char>> &std::basic_ostream<char,std::char_traits<char>>::operator <<(const void *)'
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\ostream(457): note: o 'std::basic_ostream<char,std::char_traits<char>> &std::basic_ostream<char,std::char_traits<char>>::operator <<(long double)'
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\ostream(437): note: o 'std::basic_ostream<char,std::char_traits<char>> &std::basic_ostream<char,std::char_traits<char>>::operator <<(double)'
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\ostream(417): note: o 'std::basic_ostream<char,std::char_traits<char>> &std::basic_ostream<char,std::char_traits<char>>::operator <<(float)'
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\ostream(396): note: o 'std::basic_ostream<char,std::char_traits<char>> &std::basic_ostream<char,std::char_traits<char>>::operator <<(unsigned __int64)'
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\ostream(376): note: o 'std::basic_ostream<char,std::char_traits<char>> &std::basic_ostream<char,std::char_traits<char>>::operator <<(__int64)'
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\ostream(355): note: o 'std::basic_ostream<char,std::char_traits<char>> &std::basic_ostream<char,std::char_traits<char>>::operator <<(unsigned long)'
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\ostream(335): note: o 'std::basic_ostream<char,std::char_traits<char>> &std::basic_ostream<char,std::char_traits<char>>::operator <<(long)'
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\ostream(315): note: o 'std::basic_ostream<char,std::char_traits<char>> &std::basic_ostream<char,std::char_traits<char>>::operator <<(unsigned int)'
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\ostream(290): note: o 'std::basic_ostream<char,std::char_traits<char>> &std::basic_ostream<char,std::char_traits<char>>::operator <<(int)'
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\ostream(270): note: o 'std::basic_ostream<char,std::char_traits<char>> &std::basic_ostream<char,std::char_traits<char>>::operator <<(unsigned short)'
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\ostream(236): note: o 'std::basic_ostream<char,std::char_traits<char>> &std::basic_ostream<char,std::char_traits<char>>::operator <<(short)'
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\ostream(216): note: o 'std::basic_ostream<char,std::char_traits<char>> &std::basic_ostream<char,std::char_traits<char>>::operator <<(bool)'
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\ostream(209): note: o 'std::basic_ostream<char,std::char_traits<char>> &std::basic_ostream<char,std::char_traits<char>>::operator <<(std::ios_base &(__cdecl *)(std::ios_base &))'
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\ostream(202): note: o 'std::basic_ostream<char,std::char_traits<char>> &std::basic_ostream<char,std::char_traits<char>>::operator <<(std::basic_ios<char,std::char_traits<char>> &(__cdecl *)(std::basic_ios<char,std::char_traits<char>> &))'
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\ostream(196): note: o 'std::basic_ostream<char,std::char_traits<char>> &std::basic_ostream<char,std::char_traits<char>>::operator <<(std::basic_ostream<char,std::char_traits<char>> &(__cdecl *)(std::basic_ostream<char,std::char_traits<char>> &))'
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\ostream(1021): note: o 'std::basic_ostream<char,std::char_traits<char>> &std::operator <<<char,std::char_traits<char>>(std::basic_ostream<char,std::char_traits<char>> &,const std::error_code &)'
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\ostream(983): note: o 'std::basic_ostream<char,std::char_traits<char>> &std::operator <<<char,std::char_traits<char>,std::string>(std::basic_ostream<char,std::char_traits<char>> &&,const _Ty &)'
+          with
+          [
+              _Ty=std::string
+          ]
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\ostream(973): note: o 'std::basic_ostream<char,std::char_traits<char>> &std::operator <<<std::char_traits<char>>(std::basic_ostream<char,std::char_traits<char>> &,unsigned char)'
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\ostream(966): note: o 'std::basic_ostream<char,std::char_traits<char>> &std::operator <<<std::char_traits<char>>(std::basic_ostream<char,std::char_traits<char>> &,const unsigned char *)'
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\ostream(959): note: o 'std::basic_ostream<char,std::char_traits<char>> &std::operator <<<std::char_traits<char>>(std::basic_ostream<char,std::char_traits<char>> &,signed char)'
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\ostream(952): note: o 'std::basic_ostream<char,std::char_traits<char>> &std::operator <<<std::char_traits<char>>(std::basic_ostream<char,std::char_traits<char>> &,const signed char *)'
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\ostream(826): note: o 'std::basic_ostream<char,std::char_traits<char>> &std::operator <<<std::char_traits<char>>(std::basic_ostream<char,std::char_traits<char>> &,char)'
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\ostream(779): note: o 'std::basic_ostream<char,std::char_traits<char>> &std::operator <<<std::char_traits<char>>(std::basic_ostream<char,std::char_traits<char>> &,const char *)'
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\ostream(741): note: o 'std::basic_ostream<char,std::char_traits<char>> &std::operator <<<char,std::char_traits<char>>(std::basic_ostream<char,std::char_traits<char>> &,char)'
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\ostream(694): note: o 'std::basic_ostream<char,std::char_traits<char>> &std::operator <<<char,std::char_traits<char>>(std::basic_ostream<char,std::char_traits<char>> &,const char *)'
+  d:\documenti\github\pds-hopeless\kinderpinguì\observer\observer\server.cpp(21): note: durante la ricerca di corrispondenza con l'elenco di argomenti '(std::basic_ostream<char,std::char_traits<char>>, std::string)'
+d:\documenti\github\pds-hopeless\kinderpinguì\observer\observer\server.cpp(24): error C2679: '<<' binario: non è stato trovato alcun operatore che accetti un operando destro di tipo 'std::string'. È anche possibile che non vi siano conversioni accettabili.
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\ostream(497): note: potrebbe essere 'std::basic_ostream<char,std::char_traits<char>> &std::basic_ostream<char,std::char_traits<char>>::operator <<(std::basic_streambuf<char,std::char_traits<char>> *)'
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\ostream(477): note: o 'std::basic_ostream<char,std::char_traits<char>> &std::basic_ostream<char,std::char_traits<char>>::operator <<(const void *)'
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\ostream(457): note: o 'std::basic_ostream<char,std::char_traits<char>> &std::basic_ostream<char,std::char_traits<char>>::operator <<(long double)'
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\ostream(437): note: o 'std::basic_ostream<char,std::char_traits<char>> &std::basic_ostream<char,std::char_traits<char>>::operator <<(double)'
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\ostream(417): note: o 'std::basic_ostream<char,std::char_traits<char>> &std::basic_ostream<char,std::char_traits<char>>::operator <<(float)'
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\ostream(396): note: o 'std::basic_ostream<char,std::char_traits<char>> &std::basic_ostream<char,std::char_traits<char>>::operator <<(unsigned __int64)'
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\ostream(376): note: o 'std::basic_ostream<char,std::char_traits<char>> &std::basic_ostream<char,std::char_traits<char>>::operator <<(__int64)'
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\ostream(355): note: o 'std::basic_ostream<char,std::char_traits<char>> &std::basic_ostream<char,std::char_traits<char>>::operator <<(unsigned long)'
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\ostream(335): note: o 'std::basic_ostream<char,std::char_traits<char>> &std::basic_ostream<char,std::char_traits<char>>::operator <<(long)'
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\ostream(315): note: o 'std::basic_ostream<char,std::char_traits<char>> &std::basic_ostream<char,std::char_traits<char>>::operator <<(unsigned int)'
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\ostream(290): note: o 'std::basic_ostream<char,std::char_traits<char>> &std::basic_ostream<char,std::char_traits<char>>::operator <<(int)'
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\ostream(270): note: o 'std::basic_ostream<char,std::char_traits<char>> &std::basic_ostream<char,std::char_traits<char>>::operator <<(unsigned short)'
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\ostream(236): note: o 'std::basic_ostream<char,std::char_traits<char>> &std::basic_ostream<char,std::char_traits<char>>::operator <<(short)'
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\ostream(216): note: o 'std::basic_ostream<char,std::char_traits<char>> &std::basic_ostream<char,std::char_traits<char>>::operator <<(bool)'
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\ostream(209): note: o 'std::basic_ostream<char,std::char_traits<char>> &std::basic_ostream<char,std::char_traits<char>>::operator <<(std::ios_base &(__cdecl *)(std::ios_base &))'
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\ostream(202): note: o 'std::basic_ostream<char,std::char_traits<char>> &std::basic_ostream<char,std::char_traits<char>>::operator <<(std::basic_ios<char,std::char_traits<char>> &(__cdecl *)(std::basic_ios<char,std::char_traits<char>> &))'
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\ostream(196): note: o 'std::basic_ostream<char,std::char_traits<char>> &std::basic_ostream<char,std::char_traits<char>>::operator <<(std::basic_ostream<char,std::char_traits<char>> &(__cdecl *)(std::basic_ostream<char,std::char_traits<char>> &))'
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\ostream(1021): note: o 'std::basic_ostream<char,std::char_traits<char>> &std::operator <<<char,std::char_traits<char>>(std::basic_ostream<char,std::char_traits<char>> &,const std::error_code &)'
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\ostream(983): note: o 'std::basic_ostream<char,std::char_traits<char>> &std::operator <<<char,std::char_traits<char>,std::string>(std::basic_ostream<char,std::char_traits<char>> &&,const _Ty &)'
+          with
+          [
+              _Ty=std::string
+          ]
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\ostream(973): note: o 'std::basic_ostream<char,std::char_traits<char>> &std::operator <<<std::char_traits<char>>(std::basic_ostream<char,std::char_traits<char>> &,unsigned char)'
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\ostream(966): note: o 'std::basic_ostream<char,std::char_traits<char>> &std::operator <<<std::char_traits<char>>(std::basic_ostream<char,std::char_traits<char>> &,const unsigned char *)'
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\ostream(959): note: o 'std::basic_ostream<char,std::char_traits<char>> &std::operator <<<std::char_traits<char>>(std::basic_ostream<char,std::char_traits<char>> &,signed char)'
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\ostream(952): note: o 'std::basic_ostream<char,std::char_traits<char>> &std::operator <<<std::char_traits<char>>(std::basic_ostream<char,std::char_traits<char>> &,const signed char *)'
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\ostream(826): note: o 'std::basic_ostream<char,std::char_traits<char>> &std::operator <<<std::char_traits<char>>(std::basic_ostream<char,std::char_traits<char>> &,char)'
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\ostream(779): note: o 'std::basic_ostream<char,std::char_traits<char>> &std::operator <<<std::char_traits<char>>(std::basic_ostream<char,std::char_traits<char>> &,const char *)'
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\ostream(741): note: o 'std::basic_ostream<char,std::char_traits<char>> &std::operator <<<char,std::char_traits<char>>(std::basic_ostream<char,std::char_traits<char>> &,char)'
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\ostream(694): note: o 'std::basic_ostream<char,std::char_traits<char>> &std::operator <<<char,std::char_traits<char>>(std::basic_ostream<char,std::char_traits<char>> &,const char *)'
+  d:\documenti\github\pds-hopeless\kinderpinguì\observer\observer\server.cpp(24): note: durante la ricerca di corrispondenza con l'elenco di argomenti '(std::basic_ostream<char,std::char_traits<char>>, std::string)'
+d:\documenti\github\pds-hopeless\kinderpinguì\observer\observer\server.cpp(27): error C2679: '<<' binario: non è stato trovato alcun operatore che accetti un operando destro di tipo 'std::string'. È anche possibile che non vi siano conversioni accettabili.
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\ostream(497): note: potrebbe essere 'std::basic_ostream<char,std::char_traits<char>> &std::basic_ostream<char,std::char_traits<char>>::operator <<(std::basic_streambuf<char,std::char_traits<char>> *)'
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\ostream(477): note: o 'std::basic_ostream<char,std::char_traits<char>> &std::basic_ostream<char,std::char_traits<char>>::operator <<(const void *)'
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\ostream(457): note: o 'std::basic_ostream<char,std::char_traits<char>> &std::basic_ostream<char,std::char_traits<char>>::operator <<(long double)'
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\ostream(437): note: o 'std::basic_ostream<char,std::char_traits<char>> &std::basic_ostream<char,std::char_traits<char>>::operator <<(double)'
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\ostream(417): note: o 'std::basic_ostream<char,std::char_traits<char>> &std::basic_ostream<char,std::char_traits<char>>::operator <<(float)'
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\ostream(396): note: o 'std::basic_ostream<char,std::char_traits<char>> &std::basic_ostream<char,std::char_traits<char>>::operator <<(unsigned __int64)'
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\ostream(376): note: o 'std::basic_ostream<char,std::char_traits<char>> &std::basic_ostream<char,std::char_traits<char>>::operator <<(__int64)'
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\ostream(355): note: o 'std::basic_ostream<char,std::char_traits<char>> &std::basic_ostream<char,std::char_traits<char>>::operator <<(unsigned long)'
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\ostream(335): note: o 'std::basic_ostream<char,std::char_traits<char>> &std::basic_ostream<char,std::char_traits<char>>::operator <<(long)'
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\ostream(315): note: o 'std::basic_ostream<char,std::char_traits<char>> &std::basic_ostream<char,std::char_traits<char>>::operator <<(unsigned int)'
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\ostream(290): note: o 'std::basic_ostream<char,std::char_traits<char>> &std::basic_ostream<char,std::char_traits<char>>::operator <<(int)'
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\ostream(270): note: o 'std::basic_ostream<char,std::char_traits<char>> &std::basic_ostream<char,std::char_traits<char>>::operator <<(unsigned short)'
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\ostream(236): note: o 'std::basic_ostream<char,std::char_traits<char>> &std::basic_ostream<char,std::char_traits<char>>::operator <<(short)'
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\ostream(216): note: o 'std::basic_ostream<char,std::char_traits<char>> &std::basic_ostream<char,std::char_traits<char>>::operator <<(bool)'
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\ostream(209): note: o 'std::basic_ostream<char,std::char_traits<char>> &std::basic_ostream<char,std::char_traits<char>>::operator <<(std::ios_base &(__cdecl *)(std::ios_base &))'
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\ostream(202): note: o 'std::basic_ostream<char,std::char_traits<char>> &std::basic_ostream<char,std::char_traits<char>>::operator <<(std::basic_ios<char,std::char_traits<char>> &(__cdecl *)(std::basic_ios<char,std::char_traits<char>> &))'
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\ostream(196): note: o 'std::basic_ostream<char,std::char_traits<char>> &std::basic_ostream<char,std::char_traits<char>>::operator <<(std::basic_ostream<char,std::char_traits<char>> &(__cdecl *)(std::basic_ostream<char,std::char_traits<char>> &))'
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\ostream(1021): note: o 'std::basic_ostream<char,std::char_traits<char>> &std::operator <<<char,std::char_traits<char>>(std::basic_ostream<char,std::char_traits<char>> &,const std::error_code &)'
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\ostream(983): note: o 'std::basic_ostream<char,std::char_traits<char>> &std::operator <<<char,std::char_traits<char>,std::string>(std::basic_ostream<char,std::char_traits<char>> &&,const _Ty &)'
+          with
+          [
+              _Ty=std::string
+          ]
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\ostream(973): note: o 'std::basic_ostream<char,std::char_traits<char>> &std::operator <<<std::char_traits<char>>(std::basic_ostream<char,std::char_traits<char>> &,unsigned char)'
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\ostream(966): note: o 'std::basic_ostream<char,std::char_traits<char>> &std::operator <<<std::char_traits<char>>(std::basic_ostream<char,std::char_traits<char>> &,const unsigned char *)'
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\ostream(959): note: o 'std::basic_ostream<char,std::char_traits<char>> &std::operator <<<std::char_traits<char>>(std::basic_ostream<char,std::char_traits<char>> &,signed char)'
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\ostream(952): note: o 'std::basic_ostream<char,std::char_traits<char>> &std::operator <<<std::char_traits<char>>(std::basic_ostream<char,std::char_traits<char>> &,const signed char *)'
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\ostream(826): note: o 'std::basic_ostream<char,std::char_traits<char>> &std::operator <<<std::char_traits<char>>(std::basic_ostream<char,std::char_traits<char>> &,char)'
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\ostream(779): note: o 'std::basic_ostream<char,std::char_traits<char>> &std::operator <<<std::char_traits<char>>(std::basic_ostream<char,std::char_traits<char>> &,const char *)'
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\ostream(741): note: o 'std::basic_ostream<char,std::char_traits<char>> &std::operator <<<char,std::char_traits<char>>(std::basic_ostream<char,std::char_traits<char>> &,char)'
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\ostream(694): note: o 'std::basic_ostream<char,std::char_traits<char>> &std::operator <<<char,std::char_traits<char>>(std::basic_ostream<char,std::char_traits<char>> &,const char *)'
+  d:\documenti\github\pds-hopeless\kinderpinguì\observer\observer\server.cpp(27): note: durante la ricerca di corrispondenza con l'elenco di argomenti '(std::basic_ostream<char,std::char_traits<char>>, std::string)'
+  Applicazione.cpp
+d:\documenti\github\pds-hopeless\kinderpinguì\observer\observer\server.h(16): error C2065: 'Applicazione': identificatore non dichiarato
+d:\documenti\github\pds-hopeless\kinderpinguì\observer\observer\server.h(16): error C2059: errore di sintassi: '>'
+d:\documenti\github\pds-hopeless\kinderpinguì\observer\observer\server.h(16): error C2976: 'std::vector': argomenti di modello insufficienti
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\vector(678): note: vedere la dichiarazione di 'std::vector'
+d:\documenti\github\pds-hopeless\kinderpinguì\observer\observer\server.h(21): error C2061: errore di sintassi: identificatore 'Applicazione'
+d:\documenti\github\pds-hopeless\kinderpinguì\observer\observer\server.h(22): error C2061: errore di sintassi: identificatore 'Applicazione'
+d:\documenti\github\pds-hopeless\kinderpinguì\observer\observer\server.h(23): error C2061: errore di sintassi: identificatore 'Applicazione'
+d:\documenti\github\pds-hopeless\kinderpinguì\observer\observer\server.h(19): error C2512: 'std::vector': non è disponibile alcun costruttore predefinito appropriato
+  c:\program files (x86)\microsoft visual studio 14.0\vc\include\vector(678): note: vedere la dichiarazione di 'std::vector'
+d:\documenti\github\pds-hopeless\kinderpinguì\observer\observer\applicazione.cpp(23): error C2660: 'Server::rimuoviApp': la funzione non accetta 1 argomenti
+d:\documenti\github\pds-hopeless\kinderpinguì\observer\observer\applicazione.cpp(43): error C2660: 'Server::notifica': la funzione non accetta 2 argomenti
+  Generazione del codice in corso...

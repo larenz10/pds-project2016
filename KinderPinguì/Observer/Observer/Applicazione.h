@@ -1,35 +1,32 @@
 #pragma once
+#include <iostream>
+#include <memory>
 #include <Windows.h>
-#include "Observee.h"
+#include "Server.h"
+
+using namespace std;
 
 /*
 	L'Applicazione viene osservata dal server.
 	Ogni volta che succede qualcosa all'Applicazione,
-	questa il Server se ne deve accorgere e notificare
-	il Client.
+	il Server se ne deve accorgere e notificare
+	il Client. 
+	Valutare se fare la classe server come shared_ptr
 */
-class Applicazione : public Observee {
+class Applicazione {
 private:
-	LPTSTR* nome;
-	DWORD processo;
-	HICON icona;
+	Server* server;
+	string nome;
+	//LPTSTR* nome;
+	//DWORD processo;
+	//HICON icona;
 	bool focus;
 
 public:
-	//Costruttore
-	Applicazione(LPTSTR* n, DWORD p, HICON i) {
-		nome = n;
-		processo = p;
-		icona = i;
-		focus = false;
-	}
-	//Distruttore
-	virtual ~Applicazione() {
-		delete nome;
-		nome = nullptr;
-	}
-	
-	void setFocus(bool focus) {
-		this->focus = focus;
-	}
+	//Applicazione(Server* s, LPTSTR* n, DWORD p, HICON i);
+	Applicazione(Server* s, string n);
+	~Applicazione();
+	//LPTSTR* getNome();
+	string getNome();
+	void setFocus(bool f);
 };

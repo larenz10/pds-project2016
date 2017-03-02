@@ -1,6 +1,9 @@
 #pragma once
-#include "Observer.h"
+#include "Applicazione.h"
 #include <iostream>
+#include <vector>
+
+using namespace std;
 
 /* 
 	È il server che osserva i comportamenti 
@@ -8,13 +11,14 @@
 	Observer e invia al client (qui stampa)
 	le notifiche.
 */
-class Server : public Observer {
+class Server {
 private:
+	vector<Applicazione*> apps;
 
 public:
-	Server();
-	virtual ~Server();
-
-	void Print() const;
-	virtual void notify(Observee* observee);
+	Server() {}
+	~Server() {}
+	void aggiungiApp(Applicazione* app);
+	void rimuoviApp(Applicazione* app);
+	void notifica(Applicazione* app, string action);
 };

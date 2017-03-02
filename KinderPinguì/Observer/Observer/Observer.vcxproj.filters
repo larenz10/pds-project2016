@@ -15,12 +15,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Observer.h">
-      <Filter>File di intestazione</Filter>
-    </ClInclude>
-    <ClInclude Include="Observee.h">
-      <Filter>File di intestazione</Filter>
-    </ClInclude>
     <ClInclude Include="Applicazione.h">
       <Filter>File di intestazione</Filter>
     </ClInclude>
@@ -29,10 +23,13 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Observee.cpp">
+    <ClCompile Include="Applicazione.cpp">
       <Filter>File di origine</Filter>
     </ClCompile>
-    <ClCompile Include="Applicazione.cpp">
+    <ClCompile Include="Server.cpp">
+      <Filter>File di origine</Filter>
+    </ClCompile>
+    <ClCompile Include="main.cpp">
       <Filter>File di origine</Filter>
     </ClCompile>
   </ItemGroup>
