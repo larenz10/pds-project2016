@@ -27,3 +27,14 @@ void Server::notifica(Applicazione * app, string action)
 		cout << "Notifica: l'applicazione " << n << " ha ora il focus." << endl;
 	}
 }
+/* 
+	La funzione toglie il focus a tutte le applicazioni
+	ad eccezione di quella che l'ha appena guadagnato.
+*/
+void Server::togliFocus(Applicazione * app)
+{
+	for (auto it : apps) {
+		if (it != app)
+			it->setFocus(false);
+	}
+}

@@ -39,7 +39,9 @@ LPTSTR * Applicazione::getNome()
 */
 void Applicazione::setFocus(bool f) {
 	focus = f;
-	if (focus == true)
+	if (focus == true) {
+		server->togliFocus(this);
 		server->notifica(this, "focus");
+	}
 }
 

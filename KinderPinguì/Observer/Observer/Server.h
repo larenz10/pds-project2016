@@ -21,4 +21,5 @@ public:
 	void aggiungiApp(Applicazione* app);
 	void rimuoviApp(Applicazione* app);
 	void notifica(Applicazione* app, string action);
+	void togliFocus(Applicazione* app);
 };
