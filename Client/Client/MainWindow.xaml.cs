@@ -17,6 +17,7 @@ using System.Windows.Shapes;
 
 namespace Client
 {
+
     /// <summary>
     /// Logica di interazione per MainWindow.xaml
     /// </summary>
@@ -34,11 +35,13 @@ namespace Client
             stream = null;
         }
 
-        /* Questo metodo gestisce la connessione al server all'indirizzo
-         * IP e alla porta forniti nelle textBox corrispondenti.
-         * Prima di iniziare controlla che questi campi contengano dati.
-         * In tal caso, inizia il tentativo di connessione. 
-         * Se il client è già connesso, provvede alla disconnessione. */
+        ///<summary>
+        ///Questo metodo gestisce la connessione al server all'indirizzo
+        ///IP e alla porta forniti nelle textBox corrispondenti.
+        ///Prima di iniziare controlla che questi campi contengano dati.
+        ///In tal caso, inizia il tentativo di connessione. 
+        ///Se il client è già connesso, provvede alla disconnessione.
+        /// </summary>
         private void connetti_Click(object sender, RoutedEventArgs e)
         {
             if (!connected)
@@ -70,9 +73,9 @@ namespace Client
                 catch (Exception ex)
                 {
                     testo.AppendText("Errore: " + ex.StackTrace + "\n");
-                    if (client != nullptr) {
+                    if (client != null) {
                         client.Close();
-                        client = nullptr;
+                        client = null;
                     }
                     connected = false;
                     connetti.Content = "Connetti";
@@ -86,46 +89,25 @@ namespace Client
                 connected = false;
                 connetti.Content = "Connetti";
                 testo.Text = "";
-            }    
+            }
         }
 
-        /*
-         * Questo metodo si occupa di inviare al server una richiesta
-         * per ottenere la lista delle applicazioni in esecuzione. Se
-         * il client non è connesso, ritorna immediatamente. Altrimenti,
-         * aspetta la risposta del server e la mostra sulla textbox.
-         */
-        private async void listaApp_Click(object sender, RoutedEventArgs e)
+        ///<summary>
+        /// Questo metodo si occupa di inviare all'applicazione attualmente
+        /// in focus una sequenza di tasti composta da zero o più modificatori
+        /// (CTRL/ALT/CANC) seguiti dal keycode corrispondente.
+        /// </summary>
+        private void inviaApp_Click(object sender, RoutedEventArgs e)
         {
             if (!connected)
             {
-                testo.AppendText("Devi essere connesso per poter inviare richieste!\n");
+                testo.AppendText("Devi essere connesso per inviare combinazioni di tasti!\n");
                 return;
             }
-            try
-            {
-                byte[] buffer = Encoding.ASCII.GetBytes("listaApp");
-                stream = client.GetStream();
-                stream.Write(buffer, 0, buffer.Length);
-                testo.AppendText("Richiesta inviata al server.\n");
-                List apps = await getList();
-            }
-            catch (Exception ex)
-            {
-                testo.AppendText("Errore: " + ex.StackTrace);
-                client.Close();
-                client = null;
-                stream.Close();
-                stream = null;
-                connected = false;
-                connetti.Content = "Connetti";
-            }
-        }
-
-        public async Task<List> getList()
-        {
 
         }
+
+
 
         /* Questo metodo si occupa di inviare al server il messaggio contenuto
          * nel campo corrispondente. Se non è connesso, ritorna immediatamente.
