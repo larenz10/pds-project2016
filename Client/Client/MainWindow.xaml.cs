@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
-using System.Threading.Tasks;
+using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -25,14 +26,16 @@ namespace Client
     {
         /* Variabili del client */
         private TcpClient client;           //Fornisce connessioni client per i servizi di rete TCP.  
-        private NetworkStream stream;       //Fornisce il flusso di dati sottostante per l'accesso alla rete.
-        private bool connected = false;     //Indica se la connessione è stata effettuata o meno
+        private StreamReader reader;        //Fornisce il flusso di dati per leggere dati dal server.
+        private StreamWriter writer;        //Fornisce il flusso di dati per scrivere dati verso il server.
+        private bool connesso = false;     //Indica se la connessione è stata effettuata o meno
 
         public MainWindow()
         {
             InitializeComponent();
             client = null;
-            stream = null;
+            reader = null;
+            writer = null;
         }
 
         ///<summary>
@@ -44,7 +47,7 @@ namespace Client
         /// </summary>
         private void connetti_Click(object sender, RoutedEventArgs e)
         {
-            if (!connected)
+            if (!connesso)
             {
                 testo.Text = "";
                 if (string.IsNullOrWhiteSpace(indirizzo.Text))
@@ -68,7 +71,9 @@ namespace Client
                     client.Connect(address, port);
                     connetti.Content = "Disconnetti";
                     testo.AppendText("Connesso!\n");
-                    connected = true;
+                    connesso = true;
+                    Thread t = new Thread(ListenServer);
+                    t.Start();
                 }
                 catch (Exception ex)
                 {
@@ -77,7 +82,7 @@ namespace Client
                         client.Close();
                         client = null;
                     }
-                    connected = false;
+                    connesso = false;
                     connetti.Content = "Connetti";
                 }
             }
@@ -86,10 +91,32 @@ namespace Client
                 testo.AppendText("Disconnessione in corso...\n");
                 client.Close();
                 client = null;
-                connected = false;
+                connesso = false;
                 connetti.Content = "Connetti";
                 testo.Text = "";
             }
+        }
+
+        private void ListenServer()
+        {
+            try
+            {
+                reader = new StreamReader(client.GetStream());
+                string server = string.Empty;
+                while (connesso)
+                {
+                    server = reader.ReadToEnd();
+                    int cont = ASCIIEncoding.ASCII.GetByteCount(server);
+                    testo.AppendText("Ricevuti " + cont + " byte dal server:\n" + server);
+                }
+                reader.Close();
+
+            }
+            catch (IOException ex)
+            {
+                testo.AppendText("Errore: " + ex.StackTrace);
+            }
+            throw new NotImplementedException();
         }
 
         ///<summary>
@@ -99,12 +126,12 @@ namespace Client
         /// </summary>
         private void inviaApp_Click(object sender, RoutedEventArgs e)
         {
-            if (!connected)
+            if (!connesso)
             {
                 testo.AppendText("Devi essere connesso per inviare combinazioni di tasti!\n");
                 return;
             }
-
+            testo.AppendText("Metodo non implementato.\n");
         }
 
 
