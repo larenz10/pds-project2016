@@ -1,0 +1,9 @@
+﻿  stdafx.cpp
+  ServerProgetto.cpp
+  Server.cpp
+c:\users\riccardo\politecnico\magistrale\poli 15-16\programmazione di sistema\malnati\serverprogetto\serverprogetto\server.cpp(179): warning C4244: 'inizializzazione': conversione da 'wchar_t' a 'char'. Possibile perdita di dati.
+  c:\users\riccardo\politecnico\magistrale\poli 15-16\programmazione di sistema\malnati\serverprogetto\serverprogetto\server.cpp(206): note: vedere il riferimento all'istanza '<Sconosciuto>' della funzione <Sconosciuto> di cui è in corso la compilazione
+  NetworkServices.cpp
+  Applicazione.cpp
+  Generazione del codice in corso...
+  ServerProgetto.vcxproj -> C:\Users\Riccardo\Politecnico\Magistrale\Poli 15-16\Programmazione di sistema\Malnati\ServerProgetto\Debug\ServerProgetto.exe

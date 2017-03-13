@@ -12,3 +12,17 @@ D:\Documenti\GitHub\pds-hopeless\Client\Client\obj\Debug\Client.Properties.Resou
 D:\Documenti\GitHub\pds-hopeless\Client\Client\obj\Debug\Client.csproj.GenerateResource.Cache
 D:\Documenti\GitHub\pds-hopeless\Client\Client\obj\Debug\Client.exe
 D:\Documenti\GitHub\pds-hopeless\Client\Client\obj\Debug\Client.pdb
+C:\Users\Riccardo\Documents\GitHub\pds-hopeless\Client\Client\bin\Debug\Client.exe.config
+C:\Users\Riccardo\Documents\GitHub\pds-hopeless\Client\Client\obj\Debug\Client.exe
+C:\Users\Riccardo\Documents\GitHub\pds-hopeless\Client\Client\obj\Debug\Client.pdb
+C:\Users\Riccardo\Documents\GitHub\pds-hopeless\Client\Client\bin\Debug\Client.exe
+C:\Users\Riccardo\Documents\GitHub\pds-hopeless\Client\Client\bin\Debug\Client.pdb
+C:\Users\Riccardo\Documents\GitHub\pds-hopeless\Client\Client\obj\Debug\Client.csprojResolveAssemblyReference.cache
+C:\Users\Riccardo\Documents\GitHub\pds-hopeless\Client\Client\obj\Debug\MainWindow.g.cs
+C:\Users\Riccardo\Documents\GitHub\pds-hopeless\Client\Client\obj\Debug\App.g.cs
+C:\Users\Riccardo\Documents\GitHub\pds-hopeless\Client\Client\obj\Debug\Client_MarkupCompile.cache
+C:\Users\Riccardo\Documents\GitHub\pds-hopeless\Client\Client\obj\Debug\Client_MarkupCompile.lref
+C:\Users\Riccardo\Documents\GitHub\pds-hopeless\Client\Client\obj\Debug\MainWindow.baml
+C:\Users\Riccardo\Documents\GitHub\pds-hopeless\Client\Client\obj\Debug\Client.g.resources
+C:\Users\Riccardo\Documents\GitHub\pds-hopeless\Client\Client\obj\Debug\Client.Properties.Resources.resources
+C:\Users\Riccardo\Documents\GitHub\pds-hopeless\Client\Client\obj\Debug\Client.csproj.GenerateResource.Cache
