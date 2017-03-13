@@ -204,14 +204,20 @@ int Server::sendApp(Applicazione app) {
 	rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(sb);
 
 	serialize(writer, app);
-	sb.Push(sb.GetSize());
-
-	result = send(ClientSocket, sb.GetString(), sb.GetSize(), 0);
-	if (result != sb.GetSize())
+	std::string str(sb.GetString());
+	str.insert(0,std::to_string(sb.GetSize()));
+//	sb.Push(sb.GetSize());
+	result = send(ClientSocket, str.c_str(), str.size(), 0);
+	if (result != str.size())
 		std::cout << "errore nell'invio dei dati..." << std::endl;
 	else
 		std::cout << "dati inviati con successo!" << std::endl;
-
+/*   output per test, da eliminare 
+	rapidjson::Document document;
+	document.Parse(sb.GetString());
+	std::cout << "leggo: nome -> " << document["name"].GetString() << std::endl;
+	std::cout << "leggo: pid -> " << document["name"].GetUint() << std::endl;
+*/
 	sb.Clear();
 	writer.Reset(sb);
 	return result;
