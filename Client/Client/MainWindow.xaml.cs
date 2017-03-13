@@ -21,20 +21,11 @@ namespace Client
 {
     public class Applicazione
     {
-        String nome;
-        uint processo;
-        bool esisteIcona;
-        String bitmapBuf;
-        String focus;
-
-        Applicazione(String n, uint p, bool i, String b, String f)
-        {
-            nome = n;
-            processo = p;
-            esisteIcona = i;
-            bitmapBuf = b;
-            focus = f;
-        }
+        public String name;
+        public uint process;
+        public bool existIcon;
+        public String bitmapBuf;
+        public String focus;
     }
     /// <summary>
     /// Logica di interazione per MainWindow.xaml
@@ -43,18 +34,16 @@ namespace Client
     {
         /* Variabili del client */
         private TcpClient client;           //Fornisce connessioni client per i servizi di rete TCP.  
-        private StreamReader reader;        //Fornisce il flusso di dati per leggere dati dal server.
-        private StreamWriter writer;        //Fornisce il flusso di dati per scrivere dati verso il server.
-        private MemoryStream stream;
+        private NetworkStream stream;       //Stream per leggere dal server o scrivere
         private bool connesso = false;      //Indica se la connessione è stata effettuata o meno
         private Thread listen;              //Thread in ascolto sul server
+        private List<Applicazione> applicazioni;    //Lista di applicazioni
 
         public MainWindow()
         {
             InitializeComponent();
             client = null;
-            reader = null;
-            writer = null;
+            stream = null;
         }
 
         ///<summary>
@@ -91,6 +80,7 @@ namespace Client
                     connetti.Content = "Disconnetti";
                     testo.AppendText("Connesso!\n");
                     connesso = true;
+                    stream = client.GetStream();
                     listen = new Thread(ListenServer);
                     listen.Start();
                 }
@@ -113,7 +103,7 @@ namespace Client
                 client = null;
                 connesso = false;
                 connetti.Content = "Connetti";
-                testo.Text = "";
+                testo.Text = ""; 
             }
         }
 
@@ -121,13 +111,19 @@ namespace Client
         {
             try
             {
-                reader = new StreamReader(client.GetStream());
-                String server = String.Empty;
+                byte[] readBuffer = new byte[client.ReceiveBufferSize];
                 while (connesso)
                 {
-                    server = reader.ReadToEnd();
-                    object obj = JsonConvert.DeserializeObject(server);
-                    testo.AppendText(server);
+                    if (stream.CanRead)
+                    {
+                        stream.Read(readBuffer, 0, sizeof(uint));
+                        int len = readBuffer[0];
+                        stream.Read(readBuffer, 0, len);
+                        string res = Encoding.Default.GetString(readBuffer);
+                        Applicazione a = JsonConvert.DeserializeObject<Applicazione>(res);
+                        applicazioni.Add(a);
+                        testo.AppendText("Nome: " + a.name + "\n");
+                    }
                 }
             }
             catch (IOException ex)
