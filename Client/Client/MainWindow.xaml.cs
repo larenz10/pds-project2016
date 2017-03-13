@@ -15,10 +15,27 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using Newtonsoft.Json;
 
 namespace Client
 {
+    public class Applicazione
+    {
+        String nome;
+        uint processo;
+        bool esisteIcona;
+        String bitmapBuf;
+        String focus;
 
+        Applicazione(String n, uint p, bool i, String b, String f)
+        {
+            nome = n;
+            processo = p;
+            esisteIcona = i;
+            bitmapBuf = b;
+            focus = f;
+        }
+    }
     /// <summary>
     /// Logica di interazione per MainWindow.xaml
     /// </summary>
@@ -28,7 +45,9 @@ namespace Client
         private TcpClient client;           //Fornisce connessioni client per i servizi di rete TCP.  
         private StreamReader reader;        //Fornisce il flusso di dati per leggere dati dal server.
         private StreamWriter writer;        //Fornisce il flusso di dati per scrivere dati verso il server.
-        private bool connesso = false;     //Indica se la connessione è stata effettuata o meno
+        private MemoryStream stream;
+        private bool connesso = false;      //Indica se la connessione è stata effettuata o meno
+        private Thread listen;              //Thread in ascolto sul server
 
         public MainWindow()
         {
@@ -72,8 +91,8 @@ namespace Client
                     connetti.Content = "Disconnetti";
                     testo.AppendText("Connesso!\n");
                     connesso = true;
-                    Thread t = new Thread(ListenServer);
-                    t.Start();
+                    listen = new Thread(ListenServer);
+                    listen.Start();
                 }
                 catch (Exception ex)
                 {
@@ -89,6 +108,7 @@ namespace Client
             else
             {
                 testo.AppendText("Disconnessione in corso...\n");
+                listen.Abort();
                 client.Close();
                 client = null;
                 connesso = false;
@@ -102,21 +122,18 @@ namespace Client
             try
             {
                 reader = new StreamReader(client.GetStream());
-                string server = string.Empty;
+                String server = String.Empty;
                 while (connesso)
                 {
                     server = reader.ReadToEnd();
-                    int cont = ASCIIEncoding.ASCII.GetByteCount(server);
-                    testo.AppendText("Ricevuti " + cont + " byte dal server:\n" + server);
+                    object obj = JsonConvert.DeserializeObject(server);
+                    testo.AppendText(server);
                 }
-                reader.Close();
-
             }
             catch (IOException ex)
             {
                 testo.AppendText("Errore: " + ex.StackTrace);
             }
-            throw new NotImplementedException();
         }
 
         ///<summary>
