@@ -21,11 +21,29 @@ namespace Client
 {
     public class Applicazione
     {
-        public String name;
-        public uint process;
-        public bool existIcon;
-        public String bitmapBuf;
-        public String focus;
+        private String name;
+        private uint process;
+        private bool existIcon;
+        private String bitmapBuf;
+        private bool focus;
+
+        public String Name
+        {
+            get { return name; }
+            set { name = value;}
+        }
+
+        public uint Process
+        {
+            get { return process; }
+            set { process = value; }
+        }
+
+        public bool Focus
+        {
+            get { return focus; }
+            set { focus = value; }
+        }
     }
     /// <summary>
     /// Logica di interazione per MainWindow.xaml
@@ -33,17 +51,19 @@ namespace Client
     public partial class MainWindow : Window
     {
         /* Variabili del client */
-        private TcpClient client;           //Fornisce connessioni client per i servizi di rete TCP.  
-        private NetworkStream stream;       //Stream per leggere dal server o scrivere
-        private bool connesso = false;      //Indica se la connessione è stata effettuata o meno
-        private Thread listen;              //Thread in ascolto sul server
-        private List<Applicazione> applicazioni;    //Lista di applicazioni
+        private TcpClient client;                               //Fornisce connessioni client per i servizi di rete TCP.  
+        private NetworkStream stream;                           //Stream per leggere dal server o scrivere
+        private bool connesso = false;                          //Indica se la connessione è stata effettuata o meno
+        private Thread listen;                                  //Thread in ascolto sul server
+        private Thread sendKeys;                                //Thread che si occuperà di inviare la combinazione di tasti
+        private Dictionary<uint, Applicazione> applicazioni;    //Lista di applicazioni
 
         public MainWindow()
         {
             InitializeComponent();
             client = null;
             stream = null;
+            applicazioni = new Dictionary<uint, Applicazione>();
         }
 
         ///<summary>
@@ -107,22 +127,52 @@ namespace Client
             }
         }
 
+        /// <summary>
+        /// Il metodo ascolta il server fin tanto che il client vi è connesso
+        /// All'apertura istanzia il buffer di lettura, poi se lo stream
+        /// è disponibile, ne legge un byte che conterrà un codice identificativo
+        /// dell'operazione:
+        /// a -> nuova applicazione
+        /// f -> focus cambiato
+        /// r -> applicazione chiusa
+        /// In tutti e tre i casi, legge la lunghezza del messaggio inviato
+        /// e poi procede agli aggiornamenti individuati dalla notifica.
+        /// </summary>
         private void ListenServer()
         {
             try
             {
                 byte[] readBuffer = new byte[client.ReceiveBufferSize];
+                int len;
                 while (connesso)
                 {
                     if (stream.CanRead)
                     {
-                        stream.Read(readBuffer, 0, sizeof(uint));
-                        int len = readBuffer[0];
-                        stream.Read(readBuffer, 0, len);
-                        string res = Encoding.Default.GetString(readBuffer);
-                        Applicazione a = JsonConvert.DeserializeObject<Applicazione>(res);
-                        applicazioni.Add(a);
-                        testo.AppendText("Nome: " + a.name + "\n");
+                        stream.Read(readBuffer, 0, 4);                  //Lettura lunghezza messaggio
+                        len = BitConverter.ToInt32(readBuffer, 0);      //Salvataggio lunghezza
+                        stream.Read(readBuffer, 0, 2);                  //Lettura tipologia messaggio
+                        char c = BitConverter.ToChar(readBuffer, 0);    //Salvataggio tipologia  
+                        switch (c) {
+                            case 'a':
+                                stream.Read(readBuffer, 0, len);
+                                string res = Encoding.Default.GetString(readBuffer);
+                                Applicazione a = new Applicazione();
+                                a = JsonConvert.DeserializeObject<Applicazione>(res);
+                                applicazioni.Add(a.Process, a);
+                                Action act = () => { testo.AppendText("Nome: " + a.Name + "\n"); };
+                                testo.Dispatcher.Invoke(act);
+                                break;
+                            case 'f':
+                                stream.Read(readBuffer, 0, len);
+                                //Da implementare
+                                break;
+                            case 'r':
+                                stream.Read(readBuffer, 0, len);    //len = DWORD
+                                applicazioni.Remove(BitConverter.ToUInt32(readBuffer, 0));
+                                break;
+                            default:
+                                break;
+                        }
                     }
                 }
             }
@@ -145,8 +195,15 @@ namespace Client
                 return;
             }
             testo.AppendText("Metodo non implementato.\n");
+            sendKeys = new Thread(inviaServer);
+            sendKeys.Start();
         }
 
+
+        private void inviaServer()
+        {
+            throw new NotImplementedException();
+        }
 
 
         /* Questo metodo si occupa di inviare al server il messaggio contenuto
