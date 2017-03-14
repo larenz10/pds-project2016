@@ -28,3 +28,5 @@ C:\Users\Riccardo\Documents\GitHub\pds-hopeless\Client\Client\obj\Debug\Client.P
 C:\Users\Riccardo\Documents\GitHub\pds-hopeless\Client\Client\obj\Debug\Client.csproj.GenerateResource.Cache
 D:\Documenti\GitHub\pds-hopeless\Client\Client\bin\Debug\Newtonsoft.Json.dll
 D:\Documenti\GitHub\pds-hopeless\Client\Client\bin\Debug\Newtonsoft.Json.xml
+D:\Documenti\GitHub\pds-hopeless\Client\Client\obj\Debug\Window1.g.cs
+D:\Documenti\GitHub\pds-hopeless\Client\Client\obj\Debug\Window1.baml

@@ -189,20 +189,31 @@ namespace Client
         /// </summary>
         private void inviaApp_Click(object sender, RoutedEventArgs e)
         {
-            if (!connesso)
+            /*if (!connesso)
             {
                 testo.AppendText("Devi essere connesso per inviare combinazioni di tasti!\n");
                 return;
-            }
-            testo.AppendText("Metodo non implementato.\n");
-            sendKeys = new Thread(inviaServer);
-            sendKeys.Start();
+            }*/
+            Window1 w = new Window1();
+            w.Show();
+            //sendKeys = new Thread(inviaServer);
+            //sendKeys.Start();
         }
 
 
         private void inviaServer()
         {
-            throw new NotImplementedException();
+            Action act = () => { testo.AppendText("Premi i tasti che vuoi inviare all'applicazione in focus.\n"); };
+            testo.Dispatcher.Invoke(act);
+        }
+
+        /// <summary>
+        /// Questo metodo si occupa di aprire una finestra contenente
+        /// il riassunto grafico dell'attività in corso sul server.
+        /// </summary>
+        private void open_Click(object sender, RoutedEventArgs e)
+        {
+
         }
 
 
