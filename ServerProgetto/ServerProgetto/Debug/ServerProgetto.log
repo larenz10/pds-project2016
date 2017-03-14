@@ -1,9 +1,9 @@
 ﻿  stdafx.cpp
   ServerProgetto.cpp
   Server.cpp
-d:\documenti\github\pds-hopeless\serverprogetto\serverprogetto\server.cpp(179): warning C4244: 'inizializzazione': conversione da 'wchar_t' a 'char'. Possibile perdita di dati.
-  d:\documenti\github\pds-hopeless\serverprogetto\serverprogetto\server.cpp(206): note: vedere il riferimento all'istanza '<Sconosciuto>' della funzione <Sconosciuto> di cui è in corso la compilazione
+c:\users\riccardo\documents\github\pds-hopeless\serverprogetto\serverprogetto\server.cpp(179): warning C4244: 'inizializzazione': conversione da 'wchar_t' a 'char'. Possibile perdita di dati.
+  c:\users\riccardo\documents\github\pds-hopeless\serverprogetto\serverprogetto\server.cpp(206): note: vedere il riferimento all'istanza '<Sconosciuto>' della funzione <Sconosciuto> di cui è in corso la compilazione
   NetworkServices.cpp
   Applicazione.cpp
   Generazione del codice in corso...
-  ServerProgetto.vcxproj -> D:\Documenti\GitHub\pds-hopeless\ServerProgetto\Debug\ServerProgetto.exe
+  ServerProgetto.vcxproj -> C:\Users\Riccardo\Documents\GitHub\pds-hopeless\ServerProgetto\Debug\ServerProgetto.exe

@@ -199,27 +199,28 @@ template <typename Writer> void Server::serialize(Writer &writer, Applicazione a
 }
 
 int Server::sendApp(Applicazione app) {
-//	std::vector<rapidjson::StringBuffer> sbVector;
 	rapidjson::StringBuffer sb;
 	rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(sb);
 
+	/* serializzazione dei dati tramite rapidjson */
 	serialize(writer, app);
 	std::string str(sb.GetString());
-	str.insert(0,std::to_string(sb.GetSize()));
-//	sb.Push(sb.GetSize());
+
+	/* creo un byte con le dimensioni del buffer e lo inserisco in cima ad esso */
+	char s = static_cast<char>(str.size());
+	std::string::iterator it = str.begin();
+	str.insert(it, s);
+
 	result = send(ClientSocket, str.c_str(), str.size(), 0);
 	if (result != str.size())
 		std::cout << "errore nell'invio dei dati..." << std::endl;
 	else
 		std::cout << "dati inviati con successo!" << std::endl;
-/*   output per test, da eliminare 
-	rapidjson::Document document;
-	document.Parse(sb.GetString());
-	std::cout << "leggo: nome -> " << document["name"].GetString() << std::endl;
-	std::cout << "leggo: pid -> " << document["name"].GetUint() << std::endl;
-*/
+
+	/* pulisco il buffer */
 	sb.Clear();
 	writer.Reset(sb);
+
 	return result;
 }
 
