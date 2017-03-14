@@ -37,7 +37,7 @@
                 HorizontalAlignment="Left" Margin="10,286,0,0" 
                 VerticalAlignment="Top" Width="162" Height="23" Click="inviaApp_Click"/>
         <Button x:Name="open" Content="Visualizza riassunto grafico" HorizontalAlignment="Left" 
-                Margin="450,289,0,0" VerticalAlignment="Top" Width="162" Click="open_Click"/>
+                Margin="450,286,0,10" Width="162" Click="open_Click"/>
 
     </Grid>
 

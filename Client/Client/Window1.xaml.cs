@@ -19,6 +19,8 @@ namespace Client
     /// </summary>
     public partial class Window1 : Window
     {
+        public event EventHandler<CustomEventArgs> RaiseCustomEvent;
+
         public Window1()
         {
             InitializeComponent();
@@ -46,7 +48,8 @@ namespace Client
         /// </summary>
         private void button_Click(object sender, RoutedEventArgs e)
         {
-
+            RaiseCustomEvent(this, new CustomEventArgs(textBox.Text));
+            Close();
         }
 
         private void ListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -57,7 +60,24 @@ namespace Client
                 return;
             }
             textBox.Text += " ";
-            textBox.Text += listbox.SelectedItem;
+            ListBoxItem item = listbox.SelectedItem as ListBoxItem;
+            if(item != null)
+            {
+                textBox.Text += item.Content.ToString();
+            }
         }
+    }
+}
+
+public class CustomEventArgs : EventArgs
+{
+    public CustomEventArgs(string s)
+    {
+        msg = s;
+    }
+    private string msg;
+    public string Message
+    {
+        get { return msg; }
     }
 }

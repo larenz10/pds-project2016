@@ -57,6 +57,7 @@ namespace Client
         private Thread listen;                                  //Thread in ascolto sul server
         private Thread sendKeys;                                //Thread che si occuperà di inviare la combinazione di tasti
         private Dictionary<uint, Applicazione> applicazioni;    //Lista di applicazioni
+        private string combinazione;
 
         public MainWindow()
         {
@@ -183,28 +184,38 @@ namespace Client
         }
 
         ///<summary>
-        /// Questo metodo si occupa di inviare all'applicazione attualmente
-        /// in focus una sequenza di tasti composta da zero o più modificatori
-        /// (CTRL/ALT/CANC) seguiti dal keycode corrispondente.
+        /// Questo metodo apre la finestra di scelta dei tasti da inviare
+        /// all'applicazione in focus sul server. Attiva poi il thread che
+        /// si occuperà dell'invio della combinazione di tasti.
         /// </summary>
         private void inviaApp_Click(object sender, RoutedEventArgs e)
         {
-            /*if (!connesso)
+            if (!connesso)
             {
                 testo.AppendText("Devi essere connesso per inviare combinazioni di tasti!\n");
                 return;
-            }*/
+            }
             Window1 w = new Window1();
+            w.RaiseCustomEvent += new EventHandler<CustomEventArgs>(w_RaiseCustomEvent);
             w.Show();
-            //sendKeys = new Thread(inviaServer);
-            //sendKeys.Start();
+            sendKeys = new Thread(inviaServer);
+            sendKeys.Start();
         }
 
+        void w_RaiseCustomEvent(object sender, CustomEventArgs e)
+        {
+            combinazione = e.Message;
+            testo.AppendText("Combinazione: " + combinazione);
+        }
 
+        /// <summary>
+        /// Il metodo riceve la stringa e la ripulisce modificando i tasti
+        /// "particolari" nella combinazione corrispondente. Dopodiché,
+        /// procede all'invio della combinazione corretta al server.
+        /// </summary>
         private void inviaServer()
         {
-            Action act = () => { testo.AppendText("Premi i tasti che vuoi inviare all'applicazione in focus.\n"); };
-            testo.Dispatcher.Invoke(act);
+            
         }
 
         /// <summary>
@@ -215,54 +226,5 @@ namespace Client
         {
 
         }
-
-
-        /* Questo metodo si occupa di inviare al server il messaggio contenuto
-         * nel campo corrispondente. Se non è connesso, ritorna immediatamente.
-         * Aspetta la risposta dal server. 
-         * Non implementato perché inutile nell'ambito del progetto.
-         * Utilizzato solo per test preliminari.
-                  
-        private void invia_Click(object sender, RoutedEventArgs e)
-        {
-            if (!connected) {
-                testo.AppendText("Devi essere connesso per scambiare messaggi!\n");
-                return;
-            }
-            try
-            {
-                byte[] buffer = Encoding.ASCII.GetBytes(messaggio.Text);
-                stream = client.GetStream();
-                stream.Write(buffer, 0, buffer.Length);
-                testo.AppendText("Messaggio inviato al server.\n");
-                int totali = 0;         //byte ricevuti finora
-                int ricevuti = 0;       //byte ricevuti all'ultima lettura
-
-                while (totali < buffer.Length)
-                {
-                    // Gestione chiusura preventiva
-                    if ((ricevuti = stream.Read(buffer, totali,
-                        buffer.Length - totali)) == 0)
-                    {
-                        testo.AppendText("La connessione si è chiusa prematuramente.\n");
-                        connetti_Click(sender, e);
-                        break;
-                    }
-                    totali += ricevuti;
-                }
-                testo.AppendText("Ricevuti " + totali + " bytes dal server.\n");
-                testo.AppendText(Encoding.ASCII.GetString(buffer, 0, totali));
-            } catch (Exception ex)
-            {
-                testo.AppendText("Errore: " + ex.StackTrace);
-                client.Close();
-                client = null;
-                stream.Close();
-                stream = null;
-                connected = false;
-                connetti.Content = "Connetti";
-            }
-        } 
-        */
     }
 }

@@ -11,8 +11,8 @@
             <RowDefinition Height="117*"/>
             <RowDefinition Height="152*"/>
         </Grid.RowDefinitions>
-        <TextBlock x:Name="textBlock" HorizontalAlignment="Left" Margin="110,10,0,0" 
-                   TextWrapping="Wrap" Text="Scegli il modificatore" VerticalAlignment="Top"/>
+        <TextBlock x:Name="textBlock" HorizontalAlignment="Left" Margin="56,10,0,0" 
+                   TextWrapping="Wrap" Text="Scegli il modificatore e poi i tasti da inviare" VerticalAlignment="Top"/>
         <RadioButton x:Name="radioButton" Content="CTRL" 
                      HorizontalAlignment="Left" Margin="10,31,0,0" VerticalAlignment="Top" Checked="radioButton_Checked"/>
         <RadioButton x:Name="radioButton1" Content="ALT" 
@@ -71,9 +71,11 @@
             <ListBoxItem Content="7" Width="65"/>
             <ListBoxItem Content="8" Width="65"/>
             <ListBoxItem Content="9" Width="65"/>
-            <ListBoxItem Content="backspace" Width="65"/>
-            <ListBoxItem Content="delete" Width="65"/>
-            <ListBoxItem Content="esc" Width="65"/>
+            <ListBoxItem Content="Backspace" Width="65"/>
+            <ListBoxItem Content="Delete" Width="65"/>
+            <ListBoxItem Content="Esc" Width="65"/>
+            <ListBoxItem Content="Ins" Width="65"/>
+            <ListBoxItem Content="Invio" Width="65"/>
         </ListBox>
     </Grid>
 </Window>
