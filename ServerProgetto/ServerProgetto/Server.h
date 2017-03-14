@@ -8,6 +8,7 @@
 #include <iostream>
 #include <list>
 #include <vector>
+#include <sstream>
 #include "NetworkServices.h"
 #include "Applicazione.h"
 

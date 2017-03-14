@@ -201,25 +201,27 @@ template <typename Writer> void Server::serialize(Writer &writer, Applicazione a
 int Server::sendApp(Applicazione app) {
 	rapidjson::StringBuffer sb;
 	rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(sb);
-
+	char code = 'a';
 	/* serializzazione dei dati tramite rapidjson */
 	serialize(writer, app);
-	std::string str(sb.GetString());
 
-	/* creo un byte con le dimensioni del buffer e lo inserisco in cima ad esso */
-	char s = static_cast<char>(str.size());
-	std::string::iterator it = str.begin();
-	str.insert(it, s);
-
-	result = send(ClientSocket, str.c_str(), str.size(), 0);
-	if (result != str.size())
+	UINT32 bufferSize = static_cast<UINT32>(sb.GetSize());
+	std::vector<unsigned char> buffer;
+	buffer.resize(sizeof(bufferSize) + sb.GetSize() + 1);
+	memcpy(&buffer[0], &bufferSize, sizeof(bufferSize));
+	memcpy(&buffer[4], &code, sizeof(char));
+	memcpy(&buffer[5], sb.GetString(), sb.GetSize());
+	std::string str(buffer.begin(), buffer.end());
+	result = send(ClientSocket, str.c_str(), buffer.size(), 0);
+	if (result != buffer.size())
 		std::cout << "errore nell'invio dei dati..." << std::endl;
 	else
 		std::cout << "dati inviati con successo!" << std::endl;
-
-	/* pulisco il buffer */
+	
+	/* pulisco il buffer e stringa */
 	sb.Clear();
 	writer.Reset(sb);
+	str.clear();
 
 	return result;
 }
