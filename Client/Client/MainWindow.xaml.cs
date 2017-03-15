@@ -56,6 +56,7 @@ namespace Client
         private bool connesso = false;                          //Indica se la connessione è stata effettuata o meno
         private Thread listen;                                  //Thread in ascolto sul server
         private Thread sendKeys;                                //Thread che si occuperà di inviare la combinazione di tasti
+        private Thread grafica;                                 //Thread che si occuperà di gestire il riassunto grafico
         private Dictionary<uint, Applicazione> applicazioni;    //Lista di applicazioni
         private string combinazione;
 
@@ -64,6 +65,7 @@ namespace Client
             InitializeComponent();
             client = null;
             stream = null;
+            combinazione = null;
             applicazioni = new Dictionary<uint, Applicazione>();
         }
 
@@ -205,7 +207,7 @@ namespace Client
         void w_RaiseCustomEvent(object sender, CustomEventArgs e)
         {
             combinazione = e.Message;
-            testo.AppendText("Combinazione: " + combinazione);
+            testo.AppendText("Combinazione: " + combinazione + "\n");
         }
 
         /// <summary>
@@ -215,7 +217,40 @@ namespace Client
         /// </summary>
         private void inviaServer()
         {
-            
+            while (combinazione == null) ;
+
+            string[] elem = combinazione.Split(' ');
+            combinazione = "";
+            foreach(var key in elem)
+            {
+                if (key.Equals("CTRL"))
+                    combinazione += '^';
+                else if (key.Equals("ALT"))
+                    combinazione += '%';
+                else if (key.Equals("SHIFT"))
+                    combinazione += '+';
+                else if (key.Equals("Backspace"))
+                    combinazione += "{BS}";
+                else if (key.Equals("Delete"))
+                    combinazione += "{DEL}";
+                else if (key.Equals("Esc"))
+                    combinazione += "{ESC}";
+                else if (key.Equals("Ins"))
+                    combinazione += "{INS}";
+                else if (key.Equals("Invio"))
+                    combinazione += "~";
+                else if (key.Equals("Fine"))
+                    combinazione += "{END}";
+                else if (key.Equals("Tab"))
+                    combinazione += "{TAB}";
+                else
+                    combinazione += key;
+            }
+            byte[] sendBuffer = ASCIIEncoding.ASCII.GetBytes(combinazione);
+            Action act = () => { testo.AppendText("Sto inviando la combinazione: " + combinazione + "\n"); };
+            testo.Dispatcher.Invoke(act);
+            stream.Write(sendBuffer, 0, sendBuffer.Length);
+            return;
         }
 
         /// <summary>
@@ -224,7 +259,7 @@ namespace Client
         /// </summary>
         private void open_Click(object sender, RoutedEventArgs e)
         {
-
+            
         }
     }
 }
