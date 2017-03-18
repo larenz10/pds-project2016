@@ -16,35 +16,23 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using Newtonsoft.Json;
+using System.Diagnostics;
 
 namespace Client
 {
+    /// <summary>
+    /// Classe dell'applicazione
+    /// </summary>
     public class Applicazione
     {
-        private String name;
-        private uint process;
-        private bool existIcon;
-        private String bitmapBuf;
-        private bool focus;
-
-        public String Name
-        {
-            get { return name; }
-            set { name = value;}
-        }
-
-        public uint Process
-        {
-            get { return process; }
-            set { process = value; }
-        }
-
-        public bool Focus
-        {
-            get { return focus; }
-            set { focus = value; }
-        }
+        public string Name { get; set; }
+        public uint Process { get; set; }
+        public bool ExistIcon { get; }
+        public string BitmapBuf { get; }
+        public bool Focus { get; set; }
+        public Stopwatch FTime { get; }
     }
+
     /// <summary>
     /// Logica di interazione per MainWindow.xaml
     /// </summary>
@@ -56,9 +44,9 @@ namespace Client
         private bool connesso = false;                          //Indica se la connessione è stata effettuata o meno
         private Thread listen;                                  //Thread in ascolto sul server
         private Thread sendKeys;                                //Thread che si occuperà di inviare la combinazione di tasti
-        private Thread grafica;                                 //Thread che si occuperà di gestire il riassunto grafico
+        private Thread riassunto;                               //Thread che si occuperà di gestire il riassunto grafico
         private Dictionary<uint, Applicazione> applicazioni;    //Lista di applicazioni
-        private string combinazione;
+        private string combinazione;                            //Combinazione per il server
 
         public MainWindow()
         {
@@ -98,7 +86,7 @@ namespace Client
                     int port = int.Parse(porta.Text);
                     connetti.Content = "In corso...";
                     client = new TcpClient();
-                    testo.AppendText("Connessione in corso...\n");
+                    testo.AppendText("Connessione in corso a" + indirizzo.Text + ":" + porta.Text + "...\n");
                     client.Connect(address, port);
                     connetti.Content = "Disconnetti";
                     testo.AppendText("Connesso!\n");
@@ -106,6 +94,8 @@ namespace Client
                     stream = client.GetStream();
                     listen = new Thread(ListenServer);
                     listen.Start();
+                    riassunto = new Thread(monitora);
+                    riassunto.Start();
                 }
                 catch (Exception ex)
                 {
@@ -122,6 +112,7 @@ namespace Client
             {
                 testo.AppendText("Disconnessione in corso...\n");
                 listen.Abort();
+                riassunto.Abort();
                 client.Close();
                 client = null;
                 connesso = false;
@@ -160,14 +151,25 @@ namespace Client
                                 stream.Read(readBuffer, 0, len);
                                 string res = Encoding.Default.GetString(readBuffer);
                                 Applicazione a = new Applicazione();
+                                a.FTime.Start();
                                 a = JsonConvert.DeserializeObject<Applicazione>(res);
                                 applicazioni.Add(a.Process, a);
                                 Action act = () => { testo.AppendText("Nome: " + a.Name + "\n"); };
                                 testo.Dispatcher.Invoke(act);
                                 break;
                             case 'f':
-                                stream.Read(readBuffer, 0, len);
-                                //Da implementare
+                                stream.Read(readBuffer, 0, len);    //len = DWORD
+                                uint proc = BitConverter.ToUInt32(readBuffer, 0);
+                                applicazioni[proc].Focus = true;
+                                applicazioni[proc].FTime.Start();
+                                foreach (var app in applicazioni)
+                                {
+                                    if (app.Key != proc)
+                                    {
+                                        app.Value.Focus = false;
+                                        app.Value.FTime.Stop();
+                                    }
+                                }
                                 break;
                             case 'r':
                                 stream.Read(readBuffer, 0, len);    //len = DWORD
@@ -246,20 +248,44 @@ namespace Client
                 else
                     combinazione += key;
             }
-            byte[] sendBuffer = ASCIIEncoding.ASCII.GetBytes(combinazione);
+            byte[] result = ASCIIEncoding.ASCII.GetBytes(combinazione);
+            int len = result.Length;
+            byte[] lenBytes = BitConverter.GetBytes(len);
+            if (BitConverter.IsLittleEndian)
+                Array.Reverse(lenBytes);
             Action act = () => { testo.AppendText("Sto inviando la combinazione: " + combinazione + "\n"); };
             testo.Dispatcher.Invoke(act);
-            stream.Write(sendBuffer, 0, sendBuffer.Length);
+            stream.Write(lenBytes, 0, 4);
+            stream.Write(result, 0, result.Length);
             return;
         }
 
         /// <summary>
-        /// Questo metodo si occupa di aprire una finestra contenente
-        /// il riassunto grafico dell'attività in corso sul server.
+        /// Il metodo gestisce il riassunto grafico, aggiornando con
+        /// un thread dedicato le informazioni nel datagrid in base
+        /// alle informazioni ricevute dal server, che sono trasmesse
+        /// alla struttura applicazioni. Ogni volta che in quella struttura
+        /// si verificherà una modifica, questa sarà riportata sul riassunto.
         /// </summary>
-        private void open_Click(object sender, RoutedEventArgs e)
+        private void monitora()
         {
-            
+            //Aggiunta applicazioni attive
+            foreach(var app in applicazioni)
+            {
+                DataGridRow row = new DataGridRow();
+                /* row.
+                row.Cells[0].Value = app.Value.Process;
+                row.Cells[1].Value = app.Value.Name;
+                row.Cells[2].Value = app.Value.ExistIcon;
+                row.Cells[3].Value = app.Value.FTime.Elapsed.Seconds; */
+                data.Items.Add(row);
+            }
+
+            //Gestione
+            while (connesso)
+            {
+
+            }
         }
     }
 }

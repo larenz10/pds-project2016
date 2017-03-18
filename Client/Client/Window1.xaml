@@ -76,6 +76,8 @@
             <ListBoxItem Content="Esc" Width="65"/>
             <ListBoxItem Content="Ins" Width="65"/>
             <ListBoxItem Content="Invio" Width="65"/>
+            <ListBoxItem Content="Fine" Width="65"/>
+            <ListBoxItem Content="Tab" Width="65"/>
         </ListBox>
     </Grid>
 </Window>
