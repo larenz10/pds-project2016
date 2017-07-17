@@ -7,6 +7,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Documents;
+using System.Windows.Forms;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -54,7 +55,7 @@ namespace Client
 
         private void ListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (textBox.Text == "")
+            if (textBox.Text == "" || textBox.Text == "Devi prima selezionare un modificatore.\n")
             {
                 textBox.Text = "Devi prima selezionare un modificatore.\n";
                 return;
@@ -65,6 +66,11 @@ namespace Client
             {
                 textBox.Text += item.Content.ToString();
             }
+        }
+
+        private void button1_Click(object sender, RoutedEventArgs e)
+        {
+            textBox.Text=textBox.Text.Remove(textBox.Text.Length - 2);
         }
     }
 }

@@ -36,16 +36,17 @@
         <Button x:Name="inviaApp" Content="Invia tasti all'app" 
                 HorizontalAlignment="Left" Margin="10,286,0,0" 
                 VerticalAlignment="Top" Width="162" Height="23" Click="inviaApp_Click"/>
-        <DataGrid x:Name="data" HorizontalAlignment="Left" Margin="274,38,0,0" 
-                  VerticalAlignment="Top" Height="243" Width="338"
-                  IsReadOnly="True" ColumnWidth="Auto">
-            <DataGrid.Columns>
-                <DataGridTextColumn Header="Processo"/>
-                <DataGridTextColumn Header="Applicazione"/>
-                <DataGridTextColumn Header="Icona"/>
-                <DataGridTextColumn Header="Tempo di Focus (%)"/>
-            </DataGrid.Columns>
-        </DataGrid>
+        <ListView x:Name="data" HorizontalAlignment="Center" Height="243" Margin="274,38,0,0" VerticalAlignment="Top" Width="338">
+            <ListView.View>
+                <GridView>
+                    <GridViewColumn Header="Applicazione" Width="Auto"/>
+                    <GridViewColumn Header="Processo" Width="Auto"/>
+                    <GridViewColumn Header="Icona" Width="Auto"/>
+                    <GridViewColumn Header="Tempo di focus (%)" Width="Auto"/>
+                </GridView>
+            </ListView.View>
+        </ListView>
+
 
     </Grid>
 

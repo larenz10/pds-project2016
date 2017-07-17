@@ -1,20 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using Newtonsoft.Json;
 using System.Diagnostics;
 
@@ -47,6 +39,7 @@ namespace Client
         private Thread riassunto;                               //Thread che si occuperà di gestire il riassunto grafico
         private Dictionary<uint, Applicazione> applicazioni;    //Lista di applicazioni
         private string combinazione;                            //Combinazione per il server
+        private Stopwatch CTime;                                //Tempo di connessione al server
 
         public MainWindow()
         {
@@ -55,6 +48,7 @@ namespace Client
             stream = null;
             combinazione = null;
             applicazioni = new Dictionary<uint, Applicazione>();
+            CTime = new Stopwatch();
         }
 
         ///<summary>
@@ -88,6 +82,7 @@ namespace Client
                     client = new TcpClient();
                     testo.AppendText("Connessione in corso a" + indirizzo.Text + ":" + porta.Text + "...\n");
                     client.Connect(address, port);
+                    CTime.Restart();
                     connetti.Content = "Disconnetti";
                     testo.AppendText("Connesso!\n");
                     connesso = true;
@@ -111,6 +106,7 @@ namespace Client
             else
             {
                 testo.AppendText("Disconnessione in corso...\n");
+                CTime.Stop();
                 listen.Abort();
                 riassunto.Abort();
                 client.Close();
@@ -194,11 +190,11 @@ namespace Client
         /// </summary>
         private void inviaApp_Click(object sender, RoutedEventArgs e)
         {
-            if (!connesso)
+            /*if (!connesso)
             {
                 testo.AppendText("Devi essere connesso per inviare combinazioni di tasti!\n");
                 return;
-            }
+            }*/
             Window1 w = new Window1();
             w.RaiseCustomEvent += new EventHandler<CustomEventArgs>(w_RaiseCustomEvent);
             w.Show();
@@ -206,6 +202,9 @@ namespace Client
             sendKeys.Start();
         }
 
+        /// <summary>
+        /// Evento che si occupa di prendere la combinazione da Window1.
+        /// </summary>
         void w_RaiseCustomEvent(object sender, CustomEventArgs e)
         {
             combinazione = e.Message;
@@ -269,19 +268,15 @@ namespace Client
         /// </summary>
         private void monitora()
         {
-            //Aggiunta applicazioni attive
-            foreach(var app in applicazioni)
+            while (applicazioni.Count == 0) ;
+            foreach (var app in applicazioni)
             {
-                DataGridRow row = new DataGridRow();
-                /* row.
-                row.Cells[0].Value = app.Value.Process;
-                row.Cells[1].Value = app.Value.Name;
-                row.Cells[2].Value = app.Value.ExistIcon;
-                row.Cells[3].Value = app.Value.FTime.Elapsed.Seconds; */
-                data.Items.Add(row);
+                string[] row = { app.Value.Name, app.Value.Process.ToString(), app.Value.ExistIcon.ToString(), app.Value.FTime.Elapsed.Seconds.ToString() };
+                ListViewItem item = new ListViewItem();
+                item.Content = row;
+                data.Items.Add(item);
             }
 
-            //Gestione
             while (connesso)
             {
 
