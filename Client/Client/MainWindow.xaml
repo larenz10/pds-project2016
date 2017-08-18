@@ -5,49 +5,22 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Client"
         mc:Ignorable="d"
-        Title="Client" Height="350" Width="630.475">
+        Title="Client" Height="350" Width="700" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Auto" Background="White" Icon="icon.ico" ShowInTaskbar="False">
     <Grid>
-        <TextBox x:Name="indirizzo" 
-                 HorizontalAlignment="Left" 
-                 Height="23" Margin="78,10,0,0" 
-                 TextWrapping="Wrap" 
-                 VerticalAlignment="Top" Width="120"/>
-        <TextBlock x:Name="textBlock" 
-        	       HorizontalAlignment="Left" 
-        	       Margin="10,10,0,0" TextWrapping="Wrap" 
-        	       VerticalAlignment="Top" Height="23" 
-        	       Width="63" Text="Indirizzo IP"/>
-        <TextBox x:Name="porta" 
-                 HorizontalAlignment="Left" 
-                 Height="23" Margin="274,10,0,0" 
-                 TextWrapping="Wrap" VerticalAlignment="Top" Width="68"/>
-        <TextBlock x:Name="textBlock1" 
-                   HorizontalAlignment="Left" Margin="241,10,0,0" 
-                   TextWrapping="Wrap" Text="Porta" 
-                   VerticalAlignment="Top" Height="23"/>
-        <Button x:Name="connetti" 
-                Content="Connetti" 
-                HorizontalAlignment="Left" Margin="512,10,0,0" 
-                VerticalAlignment="Top" Width="100" Height="23" Click="connetti_Click"/>
-        <TextBox x:Name="testo" 
-                 HorizontalAlignment="Left" Height="243"
-                 IsReadOnly="True" Margin="10,38,0,0" TextWrapping="Wrap" 
-                 VerticalAlignment="Top" Width="259"/>
-        <Button x:Name="inviaApp" Content="Invia tasti all'app" 
-                HorizontalAlignment="Left" Margin="10,286,0,0" 
-                VerticalAlignment="Top" Width="162" Height="23" Click="inviaApp_Click"/>
-        <ListView x:Name="data" HorizontalAlignment="Center" Height="243" Margin="274,38,0,0" VerticalAlignment="Top" Width="338">
-            <ListView.View>
-                <GridView>
-                    <GridViewColumn Header="Applicazione" Width="Auto"/>
-                    <GridViewColumn Header="Processo" Width="Auto"/>
-                    <GridViewColumn Header="Icona" Width="Auto"/>
-                    <GridViewColumn Header="Tempo di focus (%)" Width="Auto"/>
-                </GridView>
-            </ListView.View>
-        </ListView>
-
-
+        <Button x:Name="connetti" Content="Connetti" HorizontalAlignment="Left" Margin="502,10,0,0" VerticalAlignment="Top" Width="180" Height="23" Click="connetti_Click"/>
+        <TextBlock x:Name="textBlock" HorizontalAlignment="Left" Margin="10,10,0,0" TextWrapping="Wrap" Text="Indirizzo" VerticalAlignment="Top" Height="23" FontSize="14" Width="55"/>
+        <TextBox x:Name="indirizzo" HorizontalAlignment="Left" Height="23" Margin="70,10,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="120" FontSize="14"/>
+        <TextBlock x:Name="textBlock1" HorizontalAlignment="Left" Margin="210,10,0,0" TextWrapping="Wrap" Text="Porta" VerticalAlignment="Top" Width="36" Height="23" FontSize="14"/>
+        <TextBox x:Name="porta" HorizontalAlignment="Left" Height="23" Margin="251,10,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="120" FontSize="14"/>
+        <TextBox x:Name="testo" HorizontalAlignment="Left" Height="271" Margin="10,38,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="331" IsReadOnly="True"/>
+        <Button x:Name="invia" Content="Invia tasti all'app in focus" HorizontalAlignment="Left" Margin="502,286,0,0" VerticalAlignment="Top" Width="180" Height="23" Click="invia_Click"/>
+        <DataGrid x:Name="dataGrid" HorizontalAlignment="Left" Height="243" Margin="351,38,0,0" VerticalAlignment="Top" Width="331" ScrollViewer.CanContentScroll="False" UseLayoutRounding="False" CanUserReorderColumns="False">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Applicazione"/>
+                <DataGridTextColumn Header="Processo"/>
+                <DataGridTextColumn Header="Icona"/>
+                <DataGridTextColumn Header="Focus (%)"/>
+            </DataGrid.Columns>
+        </DataGrid>
     </Grid>
-
 </Window>

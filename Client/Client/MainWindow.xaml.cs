@@ -1,28 +1,38 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
+using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
+using System.Windows.Documents;
+using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
+using System.Windows.Navigation;
+using System.Windows.Shapes;
 using Newtonsoft.Json;
-using System.Diagnostics;
 
 namespace Client
 {
     /// <summary>
-    /// Classe dell'applicazione
+    /// Classe dell'applicazione in esecuzione sul server
     /// </summary>
     public class Applicazione
     {
-        public string Name { get; set; }
-        public uint Process { get; set; }
-        public bool ExistIcon { get; }
-        public string BitmapBuf { get; }
-        public bool Focus { get; set; }
-        public Stopwatch FTime { get; }
+        public string Name { get; }                 //Nome dell'applicazione
+        public uint Process { get; }                //Identificativo del processo
+        public bool ExistIcon { get; }              //Abbiamo l'icona?
+        public string BitmapBuf { get; }            //Buffer di bit per l'icona
+        public bool Focus { get; set; }             //L'app ha focus?
+        public Stopwatch tempoF { get; set; }       //Cronometro di focus dell'app
     }
 
     /// <summary>
@@ -30,33 +40,46 @@ namespace Client
     /// </summary>
     public partial class MainWindow : Window
     {
-        /* Variabili del client */
-        private TcpClient client;                               //Fornisce connessioni client per i servizi di rete TCP.  
-        private NetworkStream stream;                           //Stream per leggere dal server o scrivere
-        private bool connesso = false;                          //Indica se la connessione è stata effettuata o meno
-        private Thread listen;                                  //Thread in ascolto sul server
-        private Thread sendKeys;                                //Thread che si occuperà di inviare la combinazione di tasti
-        private Thread riassunto;                               //Thread che si occuperà di gestire il riassunto grafico
-        private Dictionary<uint, Applicazione> applicazioni;    //Lista di applicazioni
-        private string combinazione;                            //Combinazione per il server
-        private Stopwatch CTime;                                //Tempo di connessione al server
+        private TcpClient client;                               //Fornisce connessioni client per i servizi di rete TCP.
+        private NetworkStream stream;                           //Stream per leggere dal server
+        private bool connesso;                                  //Variabile booleana che identifica la connessione attiva
+        private Thread ascolta;                                 //Thread in ascolto sul server
+        private Thread inviaTasti;                              //Thread che si occupa di inviare la combinazione
+        private Thread riassunto;                               //Thread che gestisce il riassunto
+        private Dictionary<uint, Applicazione> applicazioni;    //Dizionario che contiene le applicazioni del server
+        private string combinazione;                            //Combinazione da inviare
+        private Stopwatch tempoC;                               //Cronometro di connessione al server
+        private DataTable _applicazioni;                         //Tabella delle applicazioni
 
         public MainWindow()
         {
             InitializeComponent();
-            client = null;
-            stream = null;
-            combinazione = null;
-            applicazioni = new Dictionary<uint, Applicazione>();
-            CTime = new Stopwatch();
+            SetUp();
         }
 
-        ///<summary>
-        ///Questo metodo gestisce la connessione al server all'indirizzo
-        ///IP e alla porta forniti nelle textBox corrispondenti.
-        ///Prima di iniziare controlla che questi campi contengano dati.
-        ///In tal caso, inizia il tentativo di connessione. 
-        ///Se il client è già connesso, provvede alla disconnessione.
+        private void SetUp()
+        {
+            client = null;
+            stream = null;
+            connesso = false;
+            combinazione = null;
+            applicazioni = new Dictionary<uint, Applicazione>();
+            tempoC = new Stopwatch();
+            _applicazioni = new DataTable("Applicazioni in esecuzione sul server");
+            _applicazioni.Columns.Add("Applicazione");
+            _applicazioni.Columns.Add("Processo");
+            _applicazioni.Columns.Add("Icona");
+            _applicazioni.Columns.Add("Focus (%)");
+            dataGrid.DataContext = _applicazioni.DefaultView;
+        }
+        /// <summary>
+        /// Questo metodo gestisce la connessione al server all'indirizzo
+        /// IP e alla porta forniti nelle textBox corrispondenti.
+        /// Prima di iniziare controlla che questi campi contengano dati.
+        /// In tal caso, inizia il tentativo di connessione. 
+        /// Alla fine della connessione attiva i thread paralleli che si
+        /// occupano delle altre funzioni richieste.
+        /// Se il client è già connesso, provvede alla disconnessione.
         /// </summary>
         private void connetti_Click(object sender, RoutedEventArgs e)
         {
@@ -65,55 +88,67 @@ namespace Client
                 testo.Text = "";
                 if (string.IsNullOrWhiteSpace(indirizzo.Text))
                 {
-                    testo.AppendText("Il campo indirizzo non può essere vuoto.\n");
+                    testo.AppendText("Il campo Indirizzo non può essere vuoto!\n");
                     return;
                 }
                 if (string.IsNullOrWhiteSpace(porta.Text))
                 {
-                    testo.AppendText("Il campo porta non può essere vuoto.\n");
+                    testo.AppendText("Il campo Porta non può essere vuoto.\n");
                     return;
                 }
-                    
                 try
                 {
-                    IPAddress address = IPAddress.Parse(indirizzo.Text);
+                    IPAddress ind = IPAddress.Parse(indirizzo.Text);
                     int port = int.Parse(porta.Text);
-                    connetti.Content = "In corso...";
+                    connetti.Content = "Connessione in corso...";
                     client = new TcpClient();
-                    testo.AppendText("Connessione in corso a" + indirizzo.Text + ":" + porta.Text + "...\n");
-                    client.Connect(address, port);
-                    CTime.Restart();
+                    client.Connect(ind, port);
+                    tempoC.Restart();
                     connetti.Content = "Disconnetti";
-                    testo.AppendText("Connesso!\n");
+                    testo.AppendText("Connesso a " + indirizzo.Text + ":" + porta.Text + ".\n");
                     connesso = true;
                     stream = client.GetStream();
-                    listen = new Thread(ListenServer);
-                    listen.Start();
+                    ascolta = new Thread(ascoltaServer);
+                    ascolta.Start();
                     riassunto = new Thread(monitora);
                     riassunto.Start();
+                    indirizzo.IsReadOnly = true;
+                    porta.IsReadOnly = true;
+                }
+                catch (FormatException ex)
+                {
+                    testo.AppendText("Errore nella specifica di indirizzo IP o porta.\n");
+                    testo.AppendText(ex.StackTrace);
                 }
                 catch (Exception ex)
                 {
-                    testo.AppendText("Errore: " + ex.StackTrace + "\n");
-                    if (client != null) {
+                    testo.AppendText("Errore: " + ex.StackTrace);
+                    if (client != null)
+                    {
                         client.Close();
                         client = null;
                     }
+                    if (ascolta != null)
+                        ascolta.Abort();
+                    if (riassunto != null)
+                        riassunto.Abort();
                     connesso = false;
                     connetti.Content = "Connetti";
                 }
             }
             else
             {
-                testo.AppendText("Disconnessione in corso...\n");
-                CTime.Stop();
-                listen.Abort();
-                riassunto.Abort();
+                connetti.Content = "Disconnessione in corso...";
+                tempoC.Stop();
+                ascolta.Join();
+                riassunto.Join();
                 client.Close();
                 client = null;
                 connesso = false;
                 connetti.Content = "Connetti";
-                testo.Text = ""; 
+                testo.Text = "";
+                indirizzo.IsReadOnly = false;
+                porta.IsReadOnly = false;
             }
         }
 
@@ -128,7 +163,7 @@ namespace Client
         /// In tutti e tre i casi, legge la lunghezza del messaggio inviato
         /// e poi procede agli aggiornamenti individuati dalla notifica.
         /// </summary>
-        private void ListenServer()
+        private void ascoltaServer()
         {
             try
             {
@@ -138,38 +173,53 @@ namespace Client
                 {
                     if (stream.CanRead)
                     {
-                        stream.Read(readBuffer, 0, 4);                  //Lettura lunghezza messaggio
-                        len = BitConverter.ToInt32(readBuffer, 0);      //Salvataggio lunghezza
-                        stream.Read(readBuffer, 0, 2);                  //Lettura tipologia messaggio
-                        char c = BitConverter.ToChar(readBuffer, 0);    //Salvataggio tipologia  
-                        switch (c) {
+                        stream.Read(readBuffer, 0, 4);
+                        len = BitConverter.ToInt32(readBuffer, 0);
+                        stream.Read(readBuffer, 0, 2);
+                        char c = BitConverter.ToChar(readBuffer, 0);
+                        switch(c)
+                        {
+                            //Inserimento nuova applicazione
+                            //Messaggio: len-'a'-JSON(App)
                             case 'a':
                                 stream.Read(readBuffer, 0, len);
                                 string res = Encoding.Default.GetString(readBuffer);
                                 Applicazione a = new Applicazione();
-                                a.FTime.Start();
+                                a.tempoF.Start();
                                 a = JsonConvert.DeserializeObject<Applicazione>(res);
                                 applicazioni.Add(a.Process, a);
-                                Action act = () => { testo.AppendText("Nome: " + a.Name + "\n"); };
-                                testo.Dispatcher.Invoke(act);
+                                aggiorna(a, "nuovo");
+                                Action neo = () => { testo.AppendText("Nuova applicazione!\nNome: " + a.Name + ".\n"); };
+                                testo.Dispatcher.Invoke(neo);
                                 break;
+                            //Rimozione di un'applicazione
+                            //Messaggio: len-'r'-Codice processo App
+                            case 'r':
+                                stream.Read(readBuffer, 0, len);
+                                uint prox = BitConverter.ToUInt32(readBuffer, 0);
+                                aggiorna(applicazioni[prox], "rimozione");
+                                applicazioni.Remove(prox);
+                                Action rem = () => { testo.AppendText("Applicazione chiusa!\nNome: " + applicazioni[prox].Name + ".\n"); };
+                                testo.Dispatcher.Invoke(rem);
+                                break;
+                            //Focus cambiato
+                            //Messaggio: len-'f'-Codice processo App
                             case 'f':
-                                stream.Read(readBuffer, 0, len);    //len = DWORD
+                                stream.Read(readBuffer, 0, len);
                                 uint proc = BitConverter.ToUInt32(readBuffer, 0);
-                                applicazioni[proc].Focus = true;
-                                applicazioni[proc].FTime.Start();
                                 foreach (var app in applicazioni)
                                 {
                                     if (app.Key != proc)
                                     {
                                         app.Value.Focus = false;
-                                        app.Value.FTime.Stop();
+                                        app.Value.tempoF.Stop();
                                     }
                                 }
-                                break;
-                            case 'r':
-                                stream.Read(readBuffer, 0, len);    //len = DWORD
-                                applicazioni.Remove(BitConverter.ToUInt32(readBuffer, 0));
+                                applicazioni[proc].Focus = true;
+                                applicazioni[proc].tempoF.Start();
+                                aggiorna(applicazioni[proc], "focus");
+                                Action foc = () => { testo.AppendText("Applicazione con focus: " + applicazioni[proc].Name + ".\n"); };
+                                testo.Dispatcher.Invoke(foc);
                                 break;
                             default:
                                 break;
@@ -179,83 +229,8 @@ namespace Client
             }
             catch (IOException ex)
             {
-                testo.AppendText("Errore: " + ex.StackTrace);
+                testo.AppendText("Errore: " + ex.StackTrace + "\n");
             }
-        }
-
-        ///<summary>
-        /// Questo metodo apre la finestra di scelta dei tasti da inviare
-        /// all'applicazione in focus sul server. Attiva poi il thread che
-        /// si occuperà dell'invio della combinazione di tasti.
-        /// </summary>
-        private void inviaApp_Click(object sender, RoutedEventArgs e)
-        {
-            /*if (!connesso)
-            {
-                testo.AppendText("Devi essere connesso per inviare combinazioni di tasti!\n");
-                return;
-            }*/
-            Window1 w = new Window1();
-            w.RaiseCustomEvent += new EventHandler<CustomEventArgs>(w_RaiseCustomEvent);
-            w.Show();
-            sendKeys = new Thread(inviaServer);
-            sendKeys.Start();
-        }
-
-        /// <summary>
-        /// Evento che si occupa di prendere la combinazione da Window1.
-        /// </summary>
-        void w_RaiseCustomEvent(object sender, CustomEventArgs e)
-        {
-            combinazione = e.Message;
-            testo.AppendText("Combinazione: " + combinazione + "\n");
-        }
-
-        /// <summary>
-        /// Il metodo riceve la stringa e la ripulisce modificando i tasti
-        /// "particolari" nella combinazione corrispondente. Dopodiché,
-        /// procede all'invio della combinazione corretta al server.
-        /// </summary>
-        private void inviaServer()
-        {
-            while (combinazione == null) ;
-
-            string[] elem = combinazione.Split(' ');
-            combinazione = "";
-            foreach(var key in elem)
-            {
-                if (key.Equals("CTRL"))
-                    combinazione += '^';
-                else if (key.Equals("ALT"))
-                    combinazione += '%';
-                else if (key.Equals("SHIFT"))
-                    combinazione += '+';
-                else if (key.Equals("Backspace"))
-                    combinazione += "{BS}";
-                else if (key.Equals("Delete"))
-                    combinazione += "{DEL}";
-                else if (key.Equals("Esc"))
-                    combinazione += "{ESC}";
-                else if (key.Equals("Ins"))
-                    combinazione += "{INS}";
-                else if (key.Equals("Invio"))
-                    combinazione += "~";
-                else if (key.Equals("Fine"))
-                    combinazione += "{END}";
-                else if (key.Equals("Tab"))
-                    combinazione += "{TAB}";
-                else
-                    combinazione += key;
-            }
-            byte[] result = ASCIIEncoding.ASCII.GetBytes(combinazione);
-            int len = result.Length;
-            byte[] lenBytes = BitConverter.GetBytes(len);
-            if (BitConverter.IsLittleEndian)
-                Array.Reverse(lenBytes);
-            Action act = () => { testo.AppendText("Sto inviando la combinazione: " + combinazione + "\n"); };
-            testo.Dispatcher.Invoke(act);
-            stream.Write(lenBytes, 0, 4);
-            stream.Write(result, 0, result.Length);
             return;
         }
 
@@ -268,19 +243,97 @@ namespace Client
         /// </summary>
         private void monitora()
         {
+            //Finché non ci sono applicazioni nel dizionario è inutile monitorare.
+            //Cercare un metodo più intelligente.
             while (applicazioni.Count == 0) ;
-            foreach (var app in applicazioni)
-            {
-                string[] row = { app.Value.Name, app.Value.Process.ToString(), app.Value.ExistIcon.ToString(), app.Value.FTime.Elapsed.Seconds.ToString() };
-                ListViewItem item = new ListViewItem();
-                item.Content = row;
-                data.Items.Add(item);
-            }
-
+            //Il monitoraggio dura fino alla fine della connessione
             while (connesso)
             {
 
             }
+            //Alla fine svuota la tabella
+            return;
+        }
+
+        /// <summary>
+        /// Il metodo viene triggerato da una notifica,
+        /// una volta che questa è stata registrata.
+        /// </summary>
+        private void aggiorna(Applicazione app, string modifica)
+        {
+            if (modifica == "nuovo")
+                _applicazioni.Rows.Add(app.Name, app.Process, app.ExistIcon, app.tempoF);
+            else if (modifica == "rimozione")
+            {
+                for (int i = _applicazioni.Rows.Count - 1; i >= 0; i--)
+                {
+                    DataRow dr = _applicazioni.Rows[i];
+                    if (Convert.ToUInt32(dr["Processo"]) == app.Process)
+                        dr.Delete();
+                }
+            }
+            else
+            {
+                for (int i = _applicazioni.Rows.Count - 1; i >= 0; i--)
+                {
+                    DataRow dr = _applicazioni.Rows[i];
+                    //if (Convert.ToUInt32(dr["Processo"]) == app.Process)
+                        //SetFocus()
+                }
+            }
+        }
+
+        /// <summary>
+        /// Questo metodo fa partire il thread che si occupa
+        /// di inviare i tasti all'applicazione in focus 
+        /// e aspetta la sua terminazione.
+        /// </summary>
+        private void invia_Click(object sender, RoutedEventArgs e)
+        {
+            if (!connesso)
+            {
+                testo.AppendText("Devi essere connesso per poter inviare tasti all'applicazione in focus!\n");
+                return;
+            }
+            inviaTasti = new Thread(invioFocus);
+            inviaTasti.Start();
+            inviaTasti.Join();
+        }
+
+        /// <summary>
+        /// Il metodo si occupa di aprire la finestra per la 
+        /// scelta dei tasti da inviare all'applicazione in focus.
+        /// Alla sua chiusura, inizia la procedura per inviare
+        /// la combinazione, già codificata, al Server.
+        /// </summary>
+        private void invioFocus()
+        {
+            //Attendere la chiusura della finestra...
+            //Cercare un metodo più "intelligente"...
+            Window1 w = new Window1();
+            w.RaiseCustomEvent += new EventHandler<CustomEventArgs>(w_RaiseCustomEvent);
+            w.Show();
+            while (combinazione == null) ;
+            byte[] codifica = ASCIIEncoding.ASCII.GetBytes(combinazione);
+            int lung = codifica.Length;
+            byte[] cod_lung = BitConverter.GetBytes(lung);
+            if (BitConverter.IsLittleEndian)
+                Array.Reverse(cod_lung);
+            Action act = () => { testo.AppendText("Sto inviando la combinazione all'applicazione in focus.\n"); };
+            testo.Dispatcher.Invoke(act);
+            stream.Write(cod_lung, 0, 4);
+            stream.Write(codifica, 0, lung);
+            return;
+        }
+        
+
+        /// <summary>
+        /// Evento che si occupa di prendere la combinazione codificata da Window1.
+        /// </summary>
+        void w_RaiseCustomEvent(object sender, CustomEventArgs e)
+        {
+            combinazione = e.Message;
+            testo.AppendText("Combinazione: " + combinazione + ".\n");
         }
     }
 }

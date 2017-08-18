@@ -7,7 +7,6 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Documents;
-using System.Windows.Forms;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -20,6 +19,7 @@ namespace Client
     /// </summary>
     public partial class Window1 : Window
     {
+
         public event EventHandler<CustomEventArgs> RaiseCustomEvent;
 
         public Window1()
@@ -27,50 +27,75 @@ namespace Client
             InitializeComponent();
         }
 
-        private void radioButton_Checked(object sender, RoutedEventArgs e)
+        private void ctrl_Checked(object sender, RoutedEventArgs e)
         {
-            textBox.Text = "CTRL";
+            combinazione.Text = "CTRL";
+            listbox.IsEnabled = true; 
         }
 
-        private void radioButton1_Checked(object sender, RoutedEventArgs e)
+        private void alt_Checked(object sender, RoutedEventArgs e)
         {
-            textBox.Text = "ALT";
+            combinazione.Text = "ALT";
+            listbox.IsEnabled = true;
         }
 
-        private void radioButton2_Checked(object sender, RoutedEventArgs e)
+        private void shift_Checked(object sender, RoutedEventArgs e)
         {
-            textBox.Text = "SHIFT";
+            combinazione.Text = "SHIFT";
+            listbox.IsEnabled = true;
         }
 
         /// <summary>
-        /// Chiude la finestra Window1, ma prima passa la stringa
-        /// contenuta in textBox alla MainWindow che la codificherà
-        /// per mandarla al server.
+        /// Gestisce la chiusura della finestra Window1.
+        /// Prima, codifica la combinazione per renderla pronta all'invio.
+        /// Dopodiché, solleva l'evento che passa la combinazione a MainWindow.
+        /// Infine, chiude la finestra.
         /// </summary>
-        private void button_Click(object sender, RoutedEventArgs e)
+        private void conferma_Click(object sender, RoutedEventArgs e)
         {
-            RaiseCustomEvent(this, new CustomEventArgs(textBox.Text));
+            string[] elem = combinazione.Text.Split(' ');
+            string comb = "";
+            foreach (var key in elem)
+            {
+                if (key.Equals("CTRL"))
+                    comb += '^';
+                else if (key.Equals("ALT"))
+                    comb += '%';
+                else if (key.Equals("SHIFT"))
+                    comb += '+';
+                else if (key.Equals("Backspace"))
+                    comb += "{BS}";
+                else if (key.Equals("Delete"))
+                    comb += "{DEL}";
+                else if (key.Equals("Esc"))
+                    comb += "{ESC}";
+                else if (key.Equals("Ins"))
+                    comb += "{INS}";
+                else if (key.Equals("Invio"))
+                    comb += "~";
+                else if (key.Equals("Fine"))
+                    comb += "{END}";
+                else if (key.Equals("Tab"))
+                    comb += "{TAB}";
+                else
+                    comb += key;
+            }
+            RaiseCustomEvent(this, new CustomEventArgs(comb));
             Close();
         }
 
-        private void ListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void annulla_Click(object sender, RoutedEventArgs e)
         {
-            if (textBox.Text == "" || textBox.Text == "Devi prima selezionare un modificatore.\n")
+            combinazione.Undo();
+            if (combinazione.Text == "")
             {
-                textBox.Text = "Devi prima selezionare un modificatore.\n";
-                return;
+                ctrl.IsChecked = false;
+                alt.IsChecked = false;
+                shift.IsChecked = false;
+                listbox.IsEnabled = false;
             }
-            textBox.Text += " ";
-            ListBoxItem item = listbox.SelectedItem as ListBoxItem;
-            if(item != null)
-            {
-                textBox.Text += item.Content.ToString();
-            }
-        }
 
-        private void button1_Click(object sender, RoutedEventArgs e)
-        {
-            textBox.Text=textBox.Text.Remove(textBox.Text.Length - 2);
+            //combinazione.Text = combinazione.Text.Remove(combinazione.Text.Length - 2);
         }
     }
 }

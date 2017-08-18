@@ -5,80 +5,101 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Client"
         mc:Ignorable="d"
-        Title="Scegli i tasti da inviare all'applicazione..." Height="386.025" Width="365">
-    <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="117*"/>
-            <RowDefinition Height="152*"/>
-        </Grid.RowDefinitions>
-        <TextBlock x:Name="textBlock" HorizontalAlignment="Left" Margin="56,10,0,0" 
-                   TextWrapping="Wrap" Text="Scegli il modificatore e poi i tasti da inviare" VerticalAlignment="Top"/>
-        <RadioButton x:Name="radioButton" Content="CTRL" 
-                     HorizontalAlignment="Left" Margin="10,31,0,0" VerticalAlignment="Top" Checked="radioButton_Checked"/>
-        <RadioButton x:Name="radioButton1" Content="ALT" 
-                     HorizontalAlignment="Left" Margin="147,31,0,0" VerticalAlignment="Top" Checked="radioButton1_Checked"/>
-        <RadioButton x:Name="radioButton2" Content="SHIFT" 
-                     HorizontalAlignment="Left" Margin="274,31,0,0" VerticalAlignment="Top" Checked="radioButton2_Checked"/>
-        <Button x:Name="button" Content="Conferma" HorizontalAlignment="Left" 
-                Margin="272,115,0,0" VerticalAlignment="Top" Width="75" Click="button_Click" Grid.Row="1" Height="33"/>
-        <TextBox x:Name="textBox" HorizontalAlignment="Left" 
-                 Height="76" Margin="10,115,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Grid.Row="1" Width="249" ScrollViewer.VerticalScrollBarVisibility="Auto"/>
-        <TextBlock x:Name="textBlock1" HorizontalAlignment="Left" 
-                   Margin="10,94,0,0" TextWrapping="Wrap" 
-                   Text="Tasti da inviare all'applicazione" 
-                   VerticalAlignment="Top" Grid.Row="1"
-                   />
-
+        Title="Scegli i tasti da inviare all'applicazione..." Height="307.801" Width="721.118" FontSize="14">
+    <Grid Margin="0,0,2,0">
+        <TextBlock x:Name="textBlock" HorizontalAlignment="Center" Margin="10,10,0,0" 
+                   TextWrapping="Wrap" Text="Scegli il modificatore..." VerticalAlignment="Top" TextAlignment="Center"/>
+        <RadioButton x:Name="ctrl" Content="CTRL" 
+                     HorizontalAlignment="Left" Margin="10,34,0,0" VerticalAlignment="Top" Checked="ctrl_Checked"/>
+        <RadioButton x:Name="alt" Content="ALT" 
+                     HorizontalAlignment="Center" Margin="10,34,0,0" VerticalAlignment="Top" Checked="alt_Checked"/>
+        <RadioButton x:Name="shift" Content="SHIFT" 
+                     HorizontalAlignment="Right" Margin="0,34,10,0" VerticalAlignment="Top" Checked="shift_Checked"/>
+        <TextBlock x:Name="textBlock1" Margin="10,57,0,0" TextWrapping="Wrap" 
+                   Text="Scegli i tasti da inviare..." VerticalAlignment="Top" Width="161" 
+                   TextAlignment="Center" HorizontalAlignment="Center"/>
+        <TextBox x:Name="combinazione" HorizontalAlignment="Left" Height="58" Margin="10,209,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="564" IsReadOnly="True"/>
+        <TextBlock x:Name="textBlock2" HorizontalAlignment="Left" Margin="10,185,0,0" TextWrapping="Wrap" Text="Sequenza di tasti da inviare" VerticalAlignment="Top" Width="372"/>
+        <Button x:Name="conferma" Content="Conferma" HorizontalAlignment="Right" Margin="0,208,10,0" VerticalAlignment="Top" Width="95" Height="27" Click="conferma_Click"/>
+        <Button x:Name="annulla" Content="Annulla" HorizontalAlignment="Right" Margin="0,240,10,0" VerticalAlignment="Top" Width="95" Height="27" Click="annulla_Click"/>
         <ListBox x:Name = "listbox"
-                 ScrollViewer.HorizontalScrollBarVisibility="Disabled" Margin="0,51,10,122" 
-                 HorizontalAlignment="Right" Width="329" Grid.RowSpan="2" 
-                 SelectionMode="Single" SelectionChanged="ListBox_SelectionChanged">
+                 ScrollViewer.HorizontalScrollBarVisibility="Disabled" Margin="15,81,15,97" 
+                 HorizontalAlignment="Center" Width="654" 
+                 ScrollViewer.VerticalScrollBarVisibility="Disabled" IsEnabled="False">
             <ListBox.ItemsPanel>
                 <ItemsPanelTemplate>
-                    <WrapPanel Orientation="Horizontal"/>
+                    <WrapPanel/>
                 </ItemsPanelTemplate>
             </ListBox.ItemsPanel>
-            <ListBoxItem Content="a" Width="65"/>
-            <ListBoxItem Content="b" Width="65"/>
-            <ListBoxItem Content="c" Width="65"/>
-            <ListBoxItem Content="d" Width="65"/>
-            <ListBoxItem Content="e" Width="65"/>
-            <ListBoxItem Content="f" Width="65"/>
-            <ListBoxItem Content="g" Width="65"/>
-            <ListBoxItem Content="h" Width="65"/>
-            <ListBoxItem Content="i" Width="65"/>
-            <ListBoxItem Content="j" Width="65"/>
-            <ListBoxItem Content="k" Width="65"/>
-            <ListBoxItem Content="l" Width="65"/>
-            <ListBoxItem Content="m" Width="65"/>
-            <ListBoxItem Content="n" Width="65"/>
-            <ListBoxItem Content="o" Width="65"/>
-            <ListBoxItem Content="p" Width="65"/>
-            <ListBoxItem Content="q" Width="65"/>
-            <ListBoxItem Content="r" Width="65"/>
-            <ListBoxItem Content="s" Width="65"/>
-            <ListBoxItem Content="t" Width="65"/>
-            <ListBoxItem Content="u" Width="65"/>
-            <ListBoxItem Content="v" Width="65"/>
-            <ListBoxItem Content="z" Width="65"/>
-            <ListBoxItem Content="0" Width="65"/>
-            <ListBoxItem Content="1" Width="65"/>
-            <ListBoxItem Content="2" Width="65"/>
-            <ListBoxItem Content="3" Width="65"/>
-            <ListBoxItem Content="4" Width="65"/>
-            <ListBoxItem Content="5" Width="65"/>
-            <ListBoxItem Content="6" Width="65"/>
-            <ListBoxItem Content="7" Width="65"/>
-            <ListBoxItem Content="8" Width="65"/>
-            <ListBoxItem Content="9" Width="65"/>
-            <ListBoxItem Content="Backspace" Width="65"/>
-            <ListBoxItem Content="Delete" Width="65"/>
-            <ListBoxItem Content="Esc" Width="65"/>
-            <ListBoxItem Content="Ins" Width="65"/>
-            <ListBoxItem Content="Invio" Width="65"/>
-            <ListBoxItem Content="Fine" Width="65"/>
-            <ListBoxItem Content="Tab" Width="65"/>
+            <ListBoxItem Content="a" Width="25" HorizontalContentAlignment="Center"/>
+            <ListBoxItem Content="b" Width="25" HorizontalContentAlignment="Center"/>
+            <ListBoxItem Content="c" Width="25" HorizontalContentAlignment="Center"/>
+            <ListBoxItem Content="d" Width="25" HorizontalContentAlignment="Center"/>
+            <ListBoxItem Content="e" Width="25" HorizontalContentAlignment="Center"/>
+            <ListBoxItem Content="f" Width="25" HorizontalContentAlignment="Center"/>
+            <ListBoxItem Content="g" Width="25" HorizontalContentAlignment="Center"/>
+            <ListBoxItem Content="h" Width="25" HorizontalContentAlignment="Center"/>
+            <ListBoxItem Content="i" Width="25" HorizontalContentAlignment="Center"/>
+            <ListBoxItem Content="j" Width="25" HorizontalContentAlignment="Center"/>
+            <ListBoxItem Content="k" Width="25" HorizontalContentAlignment="Center"/>
+            <ListBoxItem Content="l" Width="25" HorizontalContentAlignment="Center"/>
+            <ListBoxItem Content="m" Width="25" HorizontalContentAlignment="Center"/>
+            <ListBoxItem Content="n" Width="25" HorizontalContentAlignment="Center"/>
+            <ListBoxItem Content="o" Width="25" HorizontalContentAlignment="Center"/>
+            <ListBoxItem Content="p" Width="25" HorizontalContentAlignment="Center"/>
+            <ListBoxItem Content="q" Width="25" HorizontalContentAlignment="Center"/>
+            <ListBoxItem Content="r" Width="25" HorizontalContentAlignment="Center"/>
+            <ListBoxItem Content="s" Width="25" HorizontalContentAlignment="Center"/>
+            <ListBoxItem Content="t" Width="25" HorizontalContentAlignment="Center"/>
+            <ListBoxItem Content="u" Width="25" HorizontalContentAlignment="Center"/>
+            <ListBoxItem Content="v" Width="25" HorizontalContentAlignment="Center"/>
+            <ListBoxItem Content="w" Width="25" HorizontalContentAlignment="Center"/>
+            <ListBoxItem Content="x" Width="25" HorizontalContentAlignment="Center"/>
+            <ListBoxItem Content="y" Width="25" HorizontalContentAlignment="Center"/>
+            <ListBoxItem Content="z" Width="25" HorizontalContentAlignment="Center"/>
+            <ListBoxItem Content="A" Width="25" HorizontalContentAlignment="Center"/>
+            <ListBoxItem Content="B" Width="25" HorizontalContentAlignment="Center"/>
+            <ListBoxItem Content="C" Width="25" HorizontalContentAlignment="Center"/>
+            <ListBoxItem Content="D" Width="25" HorizontalContentAlignment="Center"/>
+            <ListBoxItem Content="E" Width="25" HorizontalContentAlignment="Center"/>
+            <ListBoxItem Content="F" Width="25" HorizontalContentAlignment="Center"/>
+            <ListBoxItem Content="G" Width="25" HorizontalContentAlignment="Center"/>
+            <ListBoxItem Content="H" Width="25" HorizontalContentAlignment="Center"/>
+            <ListBoxItem Content="I" Width="25" HorizontalContentAlignment="Center"/>
+            <ListBoxItem Content="J" Width="25" HorizontalContentAlignment="Center"/>
+            <ListBoxItem Content="K" Width="25" HorizontalContentAlignment="Center"/>
+            <ListBoxItem Content="L" Width="25" HorizontalContentAlignment="Center"/>
+            <ListBoxItem Content="M" Width="25" HorizontalContentAlignment="Center"/>
+            <ListBoxItem Content="N" Width="25" HorizontalContentAlignment="Center"/>
+            <ListBoxItem Content="O" Width="25" HorizontalContentAlignment="Center"/>
+            <ListBoxItem Content="P" Width="25" HorizontalContentAlignment="Center"/>
+            <ListBoxItem Content="Q" Width="25" HorizontalContentAlignment="Center"/>
+            <ListBoxItem Content="R" Width="25" HorizontalContentAlignment="Center"/>
+            <ListBoxItem Content="S" Width="25" HorizontalContentAlignment="Center"/>
+            <ListBoxItem Content="T" Width="25" HorizontalContentAlignment="Center"/>
+            <ListBoxItem Content="U" Width="25" HorizontalContentAlignment="Center"/>
+            <ListBoxItem Content="V" Width="25" HorizontalContentAlignment="Center"/>
+            <ListBoxItem Content="W" Width="25" HorizontalContentAlignment="Center"/>
+            <ListBoxItem Content="X" Width="25" HorizontalContentAlignment="Center"/>
+            <ListBoxItem Content="Y" Width="25" HorizontalContentAlignment="Center"/>
+            <ListBoxItem Content="Z" Width="25" HorizontalContentAlignment="Center"/>
+            <ListBoxItem Content="0" Width="65" HorizontalContentAlignment="Center"/>
+            <ListBoxItem Content="1" Width="65" HorizontalContentAlignment="Center"/>
+            <ListBoxItem Content="2" Width="65" HorizontalContentAlignment="Center"/>
+            <ListBoxItem Content="3" Width="65" HorizontalContentAlignment="Center"/>
+            <ListBoxItem Content="4" Width="65" HorizontalContentAlignment="Center"/>
+            <ListBoxItem Content="5" Width="65" HorizontalContentAlignment="Center"/>
+            <ListBoxItem Content="6" Width="65" HorizontalContentAlignment="Center"/>
+            <ListBoxItem Content="7" Width="65" HorizontalContentAlignment="Center"/>
+            <ListBoxItem Content="8" Width="65" HorizontalContentAlignment="Center"/>
+            <ListBoxItem Content="9" Width="65" HorizontalContentAlignment="Center"/>
+            <ListBoxItem Content="Backspace" Width="92.5" HorizontalContentAlignment="Center"/>
+            <ListBoxItem Content="Delete" Width="92.6" HorizontalContentAlignment="Center"/>
+            <ListBoxItem Content="Esc" Width="92.6" HorizontalContentAlignment="Center"/>
+            <ListBoxItem Content="Ins" Width="92.6" HorizontalContentAlignment="Center"/>
+            <ListBoxItem Content="Invio" Width="92.6" HorizontalContentAlignment="Center"/>
+            <ListBoxItem Content="Fine" Width="92.6" HorizontalContentAlignment="Center"/>
+            <ListBoxItem Content="Tab" Width="92.6" HorizontalContentAlignment="Center"/>
         </ListBox>
-        <Button x:Name="button1" Content="Cancella" HorizontalAlignment="Left" Margin="272,153,0,0" Grid.Row="1" VerticalAlignment="Top" Width="75" Height="33" Click="button1_Click"/>
     </Grid>
 </Window>
