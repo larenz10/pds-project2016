@@ -48,8 +48,9 @@ namespace Client
         private Thread riassunto;                               //Thread che gestisce il riassunto
         private Dictionary<uint, Applicazione> applicazioni;    //Dizionario che contiene le applicazioni del server
         private string combinazione;                            //Combinazione da inviare
+        private uint processoFocus;                             //Codice del processo in focus
         private Stopwatch tempoC;                               //Cronometro di connessione al server
-        private DataTable _applicazioni;                         //Tabella delle applicazioni
+        private DataTable _applicazioni;                        //Tabella delle applicazioni
 
         public MainWindow()
         {
@@ -217,6 +218,7 @@ namespace Client
                                 }
                                 applicazioni[proc].Focus = true;
                                 applicazioni[proc].tempoF.Start();
+                                processoFocus = proc;
                                 aggiorna(applicazioni[proc], "focus");
                                 Action foc = () => { testo.AppendText("Applicazione con focus: " + applicazioni[proc].Name + ".\n"); };
                                 testo.Dispatcher.Invoke(foc);
@@ -286,7 +288,9 @@ namespace Client
         /// <summary>
         /// Questo metodo fa partire il thread che si occupa
         /// di inviare i tasti all'applicazione in focus 
-        /// e aspetta la sua terminazione.
+        /// e aspetta la sua terminazione. Dopodiché chiama
+        /// la funzione invioFocus, che gestisce l'invio al 
+        /// server della combinazione.
         /// </summary>
         private void invia_Click(object sender, RoutedEventArgs e)
         {
@@ -295,25 +299,20 @@ namespace Client
                 testo.AppendText("Devi essere connesso per poter inviare tasti all'applicazione in focus!\n");
                 return;
             }
+            Window1 w = new Window1();
+            w.RaiseCustomEvent += new EventHandler<CustomEventArgs>(w_RaiseCustomEvent);
+            w.ShowDialog();
             inviaTasti = new Thread(invioFocus);
             inviaTasti.Start();
-            inviaTasti.Join();
         }
 
         /// <summary>
-        /// Il metodo si occupa di aprire la finestra per la 
-        /// scelta dei tasti da inviare all'applicazione in focus.
-        /// Alla sua chiusura, inizia la procedura per inviare
-        /// la combinazione, già codificata, al Server.
+        /// Il metodo si occupa di inviare la combinazione
+        /// all'applicazione in focus.
         /// </summary>
         private void invioFocus()
         {
-            //Attendere la chiusura della finestra...
-            //Cercare un metodo più "intelligente"...
-            Window1 w = new Window1();
-            w.RaiseCustomEvent += new EventHandler<CustomEventArgs>(w_RaiseCustomEvent);
-            w.Show();
-            while (combinazione == null) ;
+            byte[] cod_proc = BitConverter.GetBytes(processoFocus);
             byte[] codifica = ASCIIEncoding.ASCII.GetBytes(combinazione);
             int lung = codifica.Length;
             byte[] cod_lung = BitConverter.GetBytes(lung);
@@ -322,6 +321,7 @@ namespace Client
             Action act = () => { testo.AppendText("Sto inviando la combinazione all'applicazione in focus.\n"); };
             testo.Dispatcher.Invoke(act);
             stream.Write(cod_lung, 0, 4);
+            stream.Write(cod_proc, 0, 4);
             stream.Write(codifica, 0, lung);
             return;
         }
