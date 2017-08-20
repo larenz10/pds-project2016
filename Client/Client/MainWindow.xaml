@@ -14,7 +14,7 @@
         <TextBox x:Name="porta" HorizontalAlignment="Left" Height="23" Margin="251,10,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="120" FontSize="14"/>
         <TextBox x:Name="testo" HorizontalAlignment="Left" Height="271" Margin="10,38,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="331" IsReadOnly="True"/>
         <Button x:Name="invia" Content="Invia tasti all'app in focus" HorizontalAlignment="Left" Margin="502,286,0,0" VerticalAlignment="Top" Width="180" Height="23" Click="invia_Click"/>
-        <DataGrid x:Name="dataGrid" HorizontalAlignment="Left" Height="243" Margin="351,38,0,0" VerticalAlignment="Top" Width="331" ScrollViewer.CanContentScroll="False" UseLayoutRounding="False" CanUserReorderColumns="False">
+        <DataGrid x:Name="dataGrid" HorizontalAlignment="Left" Height="243" Margin="351,38,0,0" VerticalAlignment="Top" Width="331" ScrollViewer.CanContentScroll="False" UseLayoutRounding="False" CanUserReorderColumns="False" ColumnWidth="82" MaxColumnWidth="82">
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Applicazione"/>
                 <DataGridTextColumn Header="Processo"/>

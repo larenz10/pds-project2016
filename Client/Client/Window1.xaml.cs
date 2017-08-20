@@ -97,6 +97,16 @@ namespace Client
 
             //combinazione.Text = combinazione.Text.Remove(combinazione.Text.Length - 2);
         }
+
+        private void listbox_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            ListBoxItem item = listbox.SelectedItem as ListBoxItem;
+            if (item != null)
+            {
+                combinazione.Text += " ";
+                combinazione.Text += item.Content.ToString();
+            }
+        }
     }
 }
 

@@ -25,7 +25,8 @@
         <ListBox x:Name = "listbox"
                  ScrollViewer.HorizontalScrollBarVisibility="Disabled" Margin="15,81,15,97" 
                  HorizontalAlignment="Center" Width="654" 
-                 ScrollViewer.VerticalScrollBarVisibility="Disabled" IsEnabled="False">
+                 ScrollViewer.VerticalScrollBarVisibility="Disabled" IsEnabled="False"
+                 MouseDoubleClick="listbox_MouseDoubleClick">
             <ListBox.ItemsPanel>
                 <ItemsPanelTemplate>
                     <WrapPanel/>
