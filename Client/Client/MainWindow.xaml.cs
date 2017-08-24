@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Data;
 using System.Diagnostics;
 using System.Drawing;
@@ -37,7 +38,8 @@ namespace Client
         public string BitmaskBuffer { get; set; }       //Buffer di bit per la maschera
         public string ColorBuffer { get; set; }         //Buffer di bit per i colori
         public bool Focus { get; set; }                 //L'app ha focus?
-        public Stopwatch tempoF { get; set; }           //Cronometro di focus dell'app
+        public Stopwatch TempoF { get; set; }           //Cronometro di focus dell'app
+        public float Percentuale { get; set; }          //Percentuale di focus
     }
 
     /// <summary>
@@ -51,11 +53,13 @@ namespace Client
         private Thread ascolta;                                 //Thread in ascolto sul server
         private Thread riassunto;                               //Thread che gestisce il riassunto
         private Dictionary<uint, Applicazione> applicazioni;    //Dizionario che contiene le applicazioni del server
+        private ObservableCollection<Applicazione> apps;        //Collezione che contiene le applicazioni del server
         private string combinazione;                            //Combinazione da inviare
         private uint processoFocus;                             //Codice del processo in focus
         private Stopwatch tempoC;                               //Cronometro di connessione al server
-        private DataTable _applicazioni;                        //Tabella delle applicazioni
         readonly object key = new object();
+
+        public ObservableCollection<Applicazione> Apps { get => apps; set => apps = value; }
 
         public MainWindow()
         {
@@ -72,12 +76,6 @@ namespace Client
             combinazione = null;
             applicazioni = new Dictionary<uint, Applicazione>();
             tempoC = new Stopwatch();
-            _applicazioni = new DataTable("Applicazioni in esecuzione sul server");
-            _applicazioni.Columns.Add("Applicazione");
-            _applicazioni.Columns.Add("Processo");
-            _applicazioni.Columns.Add("Icona");
-            _applicazioni.Columns.Add("Focus (%)");
-            dataGrid.DataContext = _applicazioni.DefaultView;
         }
         /// <summary>
         /// Questo metodo gestisce la connessione al server all'indirizzo
@@ -223,7 +221,7 @@ namespace Client
                                 stream.Read(readBuffer, 0, len);
                                 string res = Encoding.Default.GetString(readBuffer);
                                 Applicazione a = new Applicazione();
-                                a.tempoF = new Stopwatch();
+                                a.TempoF = new Stopwatch();
                                 if (a.BitmaskBuffer != "")
                                 {
                                     IntPtr bitmask = new IntPtr(Convert.ToInt32(a.BitmaskBuffer, 2));
@@ -236,16 +234,16 @@ namespace Client
                                         a.Icona = System.Drawing.Image.FromHbitmap(bitmask);
                                 }
                                 if (a.Focus)
-                                    a.tempoF.Start();
+                                    a.TempoF.Start();
                                 a = JsonConvert.DeserializeObject<Applicazione>(res);
                                 applicazioni.Add(key: a.Process, value: a);
+                                Apps.Add(a);
                                 if (!pronto)
                                 {
                                     pronto = true;
                                     lock (key)
                                         Monitor.Pulse(key);
                                 }
-                                aggiorna(a, "nuovo");
                                 stream.Flush();
                                 res = "";
                                 break;
@@ -254,7 +252,7 @@ namespace Client
                             case 'r':
                                 stream.Read(readBuffer, 0, len);
                                 uint prox = BitConverter.ToUInt32(readBuffer, 0);
-                                aggiorna(applicazioni[prox], "rimozione");
+                                Apps.Remove(Apps.Where(i => i.Process == prox).Single());
                                 applicazioni.Remove(prox);
                                 break;
                             //Focus cambiato
@@ -262,18 +260,17 @@ namespace Client
                             case 'f':
                                 stream.Read(readBuffer, 0, len);
                                 uint proc = BitConverter.ToUInt32(readBuffer, 0);
-                                foreach (var app in applicazioni)
-                                {
-                                    if (app.Key != proc)
+                                foreach (var app in Apps)
+                                { 
+                                    if (app.Process != proc)
                                     {
-                                        app.Value.Focus = false;
-                                        app.Value.tempoF.Stop();
+                                        app.Focus = false;
+                                        app.TempoF.Stop();
                                     }
                                 }
-                                applicazioni[proc].Focus = true;
-                                applicazioni[proc].tempoF.Start();
+                                Apps.Where(i => i.Process == proc).Single().Focus = true;
+                                Apps.Where(i => i.Process == proc).Single().TempoF.Start();
                                 processoFocus = proc;
-                                aggiorna(applicazioni[proc], "focus");
                                 break;
                             default:
                                 break;
@@ -301,41 +298,17 @@ namespace Client
             //Finché non ci sono applicazioni nel dizionario è inutile monitorare.
             lock (key)
                 Monitor.Wait(key);
+
             //Il monitoraggio dura fino alla fine della connessione
             while (connesso)
             {
-
+                Applicazione app = Apps.Where(i => i.Process == processoFocus).Single();
+                app.Percentuale = (app.TempoF.Elapsed.Seconds / tempoC.Elapsed.Seconds) * 100;
             }
+
             //Alla fine svuota la tabella
+            Apps.Clear();
             return;
-        }
-
-        /// <summary>
-        /// Il metodo viene triggerato da una notifica,
-        /// una volta che questa è stata registrata.
-        /// </summary>
-        private void aggiorna(Applicazione app, string modifica)
-        {
-            if (modifica == "nuovo")
-                _applicazioni.Rows.Add(app.Name, app.Process, app.Icona, app.tempoF);
-            else if (modifica == "rimozione")
-            {
-                for (int i = _applicazioni.Rows.Count - 1; i >= 0; i--)
-                {
-                    DataRow dr = _applicazioni.Rows[i];
-                    if (Convert.ToUInt32(dr["Processo"]) == app.Process)
-                        dr.Delete();
-                }
-            }
-            else
-            {
-                for (int i = _applicazioni.Rows.Count - 1; i >= 0; i--)
-                {
-                    DataRow dr = _applicazioni.Rows[i];
-                    //if (Convert.ToUInt32(dr["Processo"]) == app.Process)
-                        //SetFocus()
-                }
-            }
         }
 
         /// <summary>
