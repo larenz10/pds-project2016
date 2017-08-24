@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -28,13 +29,15 @@ namespace Client
     /// </summary>
     public class Applicazione
     {
-        public string Name { get; set; }                 //Nome dell'applicazione
-        public uint Process { get; set; }                //Identificativo del processo
-        public bool ExistIcon { get; set; }              //Abbiamo l'icona?
-        public string BitmapBuf { get; set; }            //Buffer di bit per l'icona
-        public bool Focus { get; set; }             //L'app ha focus?
-        public Stopwatch tempoF { get; set; }       //Cronometro di focus dell'app
-        public Bitmap bitmap { get; set; }
+        public string Name { get; set; }                //Nome dell'applicazione
+        public uint Process { get; set; }               //Identificativo del processo
+        //public bool ExistIcon { get; set; }             //Abbiamo l'icona?
+        //public bool ColoredIcon { get; set; }           //L'icona è colorata?
+        public Bitmap Icona { get; set; }               //Definizione dell'icona
+        public string BitmaskBuffer { get; set; }       //Buffer di bit per la maschera
+        public string ColorBuffer { get; set; }         //Buffer di bit per i colori
+        public bool Focus { get; set; }                 //L'app ha focus?
+        public Stopwatch tempoF { get; set; }           //Cronometro di focus dell'app
     }
 
     /// <summary>
@@ -46,13 +49,13 @@ namespace Client
         private NetworkStream stream;                           //Stream per leggere e scrivere dal server
         private bool connesso;                                  //Variabile booleana che identifica la connessione attiva
         private Thread ascolta;                                 //Thread in ascolto sul server
-        private Thread inviaTasti;                              //Thread che si occupa di inviare la combinazione
         private Thread riassunto;                               //Thread che gestisce il riassunto
         private Dictionary<uint, Applicazione> applicazioni;    //Dizionario che contiene le applicazioni del server
         private string combinazione;                            //Combinazione da inviare
         private uint processoFocus;                             //Codice del processo in focus
         private Stopwatch tempoC;                               //Cronometro di connessione al server
         private DataTable _applicazioni;                        //Tabella delle applicazioni
+        readonly object key = new object();
 
         public MainWindow()
         {
@@ -120,6 +123,7 @@ namespace Client
                         riassunto.Start();
                         indirizzo.IsReadOnly = true;
                         porta.IsReadOnly = true;
+                        //controllaConnessione();
                     }
                     else
                     {
@@ -150,16 +154,38 @@ namespace Client
             else
             {
                 tempoC.Stop();
+                connesso = false;
                 ascolta.Abort();
-                riassunto.Abort();
+                ascolta.Join();
+                riassunto.Join();
                 client.Close();
                 client = null;
-                connesso = false;
                 connetti.Content = "Connetti";
-                testo.Text = "";
                 indirizzo.IsReadOnly = false;
                 porta.IsReadOnly = false;
             }
+        }
+
+        /// <summary>
+        /// Il metodo permette al thread principale di controllare
+        /// se il socket ha ancora una connessione attiva al server.
+        /// In caso di disconnessione brutale da parte del server,
+        /// avvia il processo di disconnessione.
+        /// </summary>
+        private void controllaConnessione()
+        {
+            while (client.Connected) ;
+            testo.AppendText("Il server si è disconnesso.\n");
+            tempoC.Stop();
+            connesso = false;
+            ascolta.Abort();
+            ascolta.Join();
+            riassunto.Join();
+            client.Close();
+            client = null;
+            connetti.Content = "Connetti";
+            indirizzo.IsReadOnly = false;
+            porta.IsReadOnly = false;
         }
 
         /// <summary>
@@ -175,6 +201,8 @@ namespace Client
         /// </summary>
         private void ascoltaServer()
         {
+            Thread.CurrentThread.Name = "Ascolto";
+            bool pronto = false;
             try
             {
                 byte[] readBuffer = new byte[client.ReceiveBufferSize];
@@ -195,14 +223,31 @@ namespace Client
                                 stream.Read(readBuffer, 0, len);
                                 string res = Encoding.Default.GetString(readBuffer);
                                 Applicazione a = new Applicazione();
-                                //a.tempoF = new Stopwatch();
-                                //a.tempoF.Start();
+                                a.tempoF = new Stopwatch();
+                                if (a.BitmaskBuffer != "")
+                                {
+                                    IntPtr bitmask = new IntPtr(Convert.ToInt32(a.BitmaskBuffer, 2));
+                                    if (a.ColorBuffer != "")
+                                    {
+                                        IntPtr color = new IntPtr(Convert.ToInt32(a.ColorBuffer, 2));
+                                        a.Icona = System.Drawing.Image.FromHbitmap(bitmask, color);
+                                    }
+                                    else
+                                        a.Icona = System.Drawing.Image.FromHbitmap(bitmask);
+                                }
+                                if (a.Focus)
+                                    a.tempoF.Start();
                                 a = JsonConvert.DeserializeObject<Applicazione>(res);
-                                applicazioni.Add(a.Process, a);
+                                applicazioni.Add(key: a.Process, value: a);
+                                if (!pronto)
+                                {
+                                    pronto = true;
+                                    lock (key)
+                                        Monitor.Pulse(key);
+                                }
                                 aggiorna(a, "nuovo");
-                                Action neo = () => { testo.AppendText("Nuova applicazione!\nNome: " + a.Name + ".\n"); };
-                                testo.Dispatcher.Invoke(neo);
                                 stream.Flush();
+                                res = "";
                                 break;
                             //Rimozione di un'applicazione
                             //Messaggio: len-'r'-Codice processo App
@@ -211,8 +256,6 @@ namespace Client
                                 uint prox = BitConverter.ToUInt32(readBuffer, 0);
                                 aggiorna(applicazioni[prox], "rimozione");
                                 applicazioni.Remove(prox);
-                                Action rem = () => { testo.AppendText("Applicazione chiusa!\nNome: " + applicazioni[prox].Name + ".\n"); };
-                                testo.Dispatcher.Invoke(rem);
                                 break;
                             //Focus cambiato
                             //Messaggio: len-'f'-Codice processo App
@@ -231,20 +274,18 @@ namespace Client
                                 applicazioni[proc].tempoF.Start();
                                 processoFocus = proc;
                                 aggiorna(applicazioni[proc], "focus");
-                                Action foc = () => { testo.AppendText("Applicazione con focus: " + applicazioni[proc].Name + ".\n"); };
-                                testo.Dispatcher.Invoke(foc);
                                 break;
                             default:
                                 break;
                         }
                     }
                 }
+                return;
             }
             catch (IOException ex)
             {
                 testo.AppendText("Errore: " + ex.StackTrace + "\n");
             }
-            return;
         }
 
         /// <summary>
@@ -256,10 +297,10 @@ namespace Client
         /// </summary>
         private void monitora()
         {
-            
+            Thread.CurrentThread.Name = "Riassunto";
             //Finché non ci sono applicazioni nel dizionario è inutile monitorare.
-            //Cercare un metodo più intelligente. Condition Variable?
-            while (applicazioni.Count == 0) ;
+            lock (key)
+                Monitor.Wait(key);
             //Il monitoraggio dura fino alla fine della connessione
             while (connesso)
             {
@@ -276,7 +317,7 @@ namespace Client
         private void aggiorna(Applicazione app, string modifica)
         {
             if (modifica == "nuovo")
-                _applicazioni.Rows.Add(app.Name, app.Process, app.ExistIcon, app.tempoF);
+                _applicazioni.Rows.Add(app.Name, app.Process, app.Icona, app.tempoF);
             else if (modifica == "rimozione")
             {
                 for (int i = _applicazioni.Rows.Count - 1; i >= 0; i--)
@@ -306,6 +347,7 @@ namespace Client
         /// </summary>
         private void invia_Click(object sender, RoutedEventArgs e)
         {
+            Thread.CurrentThread.Name = "Invio";
             if (!connesso)
             {
                 testo.AppendText("Devi essere connesso per poter inviare tasti all'applicazione in focus!\n");
@@ -314,7 +356,7 @@ namespace Client
             Window1 w = new Window1();
             w.RaiseCustomEvent += new EventHandler<CustomEventArgs>(w_RaiseCustomEvent);
             w.ShowDialog();
-            inviaTasti = new Thread(invioFocus);
+            Thread inviaTasti = new Thread(invioFocus);
             inviaTasti.Start();
         }
 
