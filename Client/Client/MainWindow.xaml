@@ -16,19 +16,19 @@
         <Button x:Name="invia" Content="Invia tasti all'app in focus" HorizontalAlignment="Left" Margin="502,286,0,0" VerticalAlignment="Top" Width="180" Height="23" Click="invia_Click"/>
         <DataGrid x:Name ="dataGrid" HorizontalAlignment="Right" Height="243" 
                   Margin="0,38,10,0" VerticalAlignment="Top" Width="326"
-                  ItemsSource="{Binding apps}" SelectionUnit="FullRow" SelectionMode="Single"
+                  SelectionUnit="FullRow" SelectionMode="Single"
                   HeadersVisibility="All" IsReadOnly="True" AutoGenerateColumns="False">
             <DataGrid.Columns>
-                <DataGridTextColumn Header="Applicazione" Binding="{Binding Path=Name}"/>
-                <DataGridTextColumn Header="Processo" Binding="{Binding Path=Process}"/>
+                <DataGridTextColumn Header="Applicazione" Binding="{Binding Name}"/>
+                <DataGridTextColumn Header="Processo" Binding="{Binding Process}"/>
                 <DataGridTemplateColumn Header="Icona">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
-                            <Image Source="{Binding Path=Icona}"/>
+                            <Image Source="{Binding Icona}"/>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
-                <DataGridTextColumn Header="Focus (%)" Binding="{Binding Path=Percentuale}"/>
+                <DataGridTextColumn Header="Focus (%)" Binding="{Binding Percentuale}"/>
             </DataGrid.Columns>
             <DataGrid.RowStyle>
                 <Style TargetType="DataGridRow">
@@ -37,11 +37,7 @@
                             <Setter Property="Background" Value="DeepSkyBlue"/>
                         </DataTrigger>
                         <DataTrigger Binding="{Binding Focus}" Value="False">
-                            <Setter Property="Background" Value="White">
-                                <Setter.Value>
-                                    <ImageBrush/>
-                                </Setter.Value>
-                            </Setter>
+                            <Setter Property="Background" Value="White"/>
                         </DataTrigger>
                     </Style.Triggers>
                 </Style>

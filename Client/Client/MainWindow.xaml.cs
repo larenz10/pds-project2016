@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.Data;
 using System.Diagnostics;
 using System.Drawing;
@@ -39,7 +40,7 @@ namespace Client
         public string ColorBuffer { get; set; }         //Buffer di bit per i colori
         public bool Focus { get; set; }                 //L'app ha focus?
         public Stopwatch TempoF { get; set; }           //Cronometro di focus dell'app
-        public float Percentuale { get; set; }          //Percentuale di focus
+        public double Percentuale { get; set; }         //Percentuale di focus
     }
 
     /// <summary>
@@ -52,13 +53,20 @@ namespace Client
         private bool connesso;                                  //Variabile booleana che identifica la connessione attiva
         private Thread ascolta;                                 //Thread in ascolto sul server
         private Thread riassunto;                               //Thread che gestisce il riassunto
-        private Dictionary<uint, Applicazione> applicazioni;    //Dizionario che contiene le applicazioni del server
         private ObservableCollection<Applicazione> apps;        //Collezione che contiene le applicazioni del server
         private string combinazione;                            //Combinazione da inviare
         private uint processoFocus;                             //Codice del processo in focus
         private Stopwatch tempoC;                               //Cronometro di connessione al server
         readonly object key = new object();
 
+        public TcpClient Client { get => client; set => client = value; }
+        public NetworkStream Stream { get => stream; set => stream = value; }
+        public bool Connesso { get => connesso; set => connesso = value; }
+        public Thread Ascolta { get => ascolta; set => ascolta = value; }
+        public Thread Riassunto { get => riassunto; set => riassunto = value; }
+        public string Combinazione { get => combinazione; set => combinazione = value; }
+        public uint ProcessoFocus { get => processoFocus; set => processoFocus = value; }
+        public Stopwatch TempoC { get => tempoC; set => tempoC = value; }
         public ObservableCollection<Applicazione> Apps { get => apps; set => apps = value; }
 
         public MainWindow()
@@ -70,13 +78,25 @@ namespace Client
 
         private void SetUp()
         {
-            client = null;
-            stream = null;
-            connesso = false;
-            combinazione = null;
-            applicazioni = new Dictionary<uint, Applicazione>();
-            tempoC = new Stopwatch();
+            Client = null;
+            Stream = null;
+            Connesso = false;
+            Combinazione = null;
+            ProcessoFocus = 0;
+            Apps = new ObservableCollection<Applicazione>();
+            TempoC = new Stopwatch();
+            dataGrid.ItemsSource = Apps;
+            Apps.CollectionChanged += OnCollectionChanged;
         }
+
+        private void OnCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            ObservableCollection<Applicazione> appSender = sender as ObservableCollection<Applicazione>;
+            NotifyCollectionChangedAction action = e.Action;
+        }
+
+
+
         /// <summary>
         /// Questo metodo gestisce la connessione al server all'indirizzo
         /// IP e alla porta forniti nelle textBox corrispondenti.
@@ -88,7 +108,7 @@ namespace Client
         /// </summary>
         private void connetti_Click(object sender, RoutedEventArgs e)
         {
-            if (!connesso)
+            if (!Connesso)
             {
                 testo.Text = "";
                 if (string.IsNullOrWhiteSpace(indirizzo.Text))
@@ -105,20 +125,20 @@ namespace Client
                 {
                     IPAddress ind = IPAddress.Parse(indirizzo.Text);
                     int port = int.Parse(porta.Text);
-                    client = new TcpClient();
-                    var result = client.BeginConnect(ind, port, null, null);
+                    Client = new TcpClient();
+                    var result = Client.BeginConnect(ind, port, null, null);
                     var success = result.AsyncWaitHandle.WaitOne(TimeSpan.FromSeconds(5));
                     if (success)
                     {
-                        tempoC.Restart();
+                        TempoC.Restart();
                         connetti.Content = "Disconnetti";
                         testo.AppendText("Connesso a " + indirizzo.Text + ":" + porta.Text + ".\n");
-                        connesso = true;
-                        stream = client.GetStream();
-                        ascolta = new Thread(ascoltaServer);
-                        ascolta.Start();
-                        riassunto = new Thread(monitora);
-                        riassunto.Start();
+                        Connesso = true;
+                        Stream = Client.GetStream();
+                        Ascolta = new Thread(ascoltaServer);
+                        Ascolta.Start();
+                        Riassunto = new Thread(monitora);
+                        Riassunto.Start();
                         indirizzo.IsReadOnly = true;
                         porta.IsReadOnly = true;
                         //controllaConnessione();
@@ -136,28 +156,28 @@ namespace Client
                 catch (Exception ex)
                 {
                     testo.AppendText("Errore: " + ex.StackTrace);
-                    if (client != null)
+                    if (Client != null)
                     {
-                        client.Close();
-                        client = null;
+                        Client.Close();
+                        Client = null;
                     }
-                    if (ascolta != null)
-                        ascolta.Abort();
-                    if (riassunto != null)
-                        riassunto.Abort();
-                    connesso = false;
+                    if (Ascolta != null)
+                        Ascolta.Abort();
+                    if (Riassunto != null)
+                        Riassunto.Abort();
+                    Connesso = false;
                     connetti.Content = "Connetti";
                 }
             }
             else
             {
-                tempoC.Stop();
-                connesso = false;
-                ascolta.Abort();
-                ascolta.Join();
-                riassunto.Join();
-                client.Close();
-                client = null;
+                TempoC.Stop();
+                Connesso = false;
+                Ascolta.Abort();
+                Ascolta.Join();
+                Riassunto.Join();
+                Client.Close();
+                Client = null;
                 connetti.Content = "Connetti";
                 indirizzo.IsReadOnly = false;
                 porta.IsReadOnly = false;
@@ -172,15 +192,15 @@ namespace Client
         /// </summary>
         private void controllaConnessione()
         {
-            while (client.Connected) ;
+            while (Client.Connected) ;
             testo.AppendText("Il server si è disconnesso.\n");
-            tempoC.Stop();
-            connesso = false;
-            ascolta.Abort();
-            ascolta.Join();
-            riassunto.Join();
-            client.Close();
-            client = null;
+            TempoC.Stop();
+            Connesso = false;
+            Ascolta.Abort();
+            Ascolta.Join();
+            Riassunto.Join();
+            Client.Close();
+            Client = null;
             connetti.Content = "Connetti";
             indirizzo.IsReadOnly = false;
             porta.IsReadOnly = false;
@@ -203,29 +223,30 @@ namespace Client
             bool pronto = false;
             try
             {
-                byte[] readBuffer = new byte[client.ReceiveBufferSize];
+                byte[] readBuffer = new byte[Client.ReceiveBufferSize];
                 int len;
-                while (connesso)
+                while (Connesso)
                 {
-                    if (stream.CanRead)
+                    if (Stream.CanRead)
                     {
-                        stream.Read(readBuffer, 0, 4);
+                        Stream.Read(readBuffer, 0, 4);
                         len = BitConverter.ToInt32(readBuffer, 0);
-                        stream.Read(readBuffer, 0, 1);
+                        Stream.Read(readBuffer, 0, 1);
                         char c = BitConverter.ToChar(readBuffer, 0);
                         switch(c)
                         {
                             //Inserimento nuova applicazione
                             //Messaggio: len-'a'-JSON(App)
                             case 'a':
-                                stream.Read(readBuffer, 0, len);
+                                Stream.Read(readBuffer, 0, len);
                                 string res = Encoding.Default.GetString(readBuffer);
                                 Applicazione a = new Applicazione();
+                                a = JsonConvert.DeserializeObject<Applicazione>(res);
                                 a.TempoF = new Stopwatch();
-                                if (a.BitmaskBuffer != "")
+                                if (a.BitmaskBuffer != null)
                                 {
                                     IntPtr bitmask = new IntPtr(Convert.ToInt32(a.BitmaskBuffer, 2));
-                                    if (a.ColorBuffer != "")
+                                    if (a.ColorBuffer != null)
                                     {
                                         IntPtr color = new IntPtr(Convert.ToInt32(a.ColorBuffer, 2));
                                         a.Icona = System.Drawing.Image.FromHbitmap(bitmask, color);
@@ -234,9 +255,10 @@ namespace Client
                                         a.Icona = System.Drawing.Image.FromHbitmap(bitmask);
                                 }
                                 if (a.Focus)
+                                {
                                     a.TempoF.Start();
-                                a = JsonConvert.DeserializeObject<Applicazione>(res);
-                                applicazioni.Add(key: a.Process, value: a);
+                                    ProcessoFocus = a.Process;
+                                }
                                 Apps.Add(a);
                                 if (!pronto)
                                 {
@@ -244,21 +266,20 @@ namespace Client
                                     lock (key)
                                         Monitor.Pulse(key);
                                 }
-                                stream.Flush();
+                                Stream.Flush();
                                 res = "";
                                 break;
                             //Rimozione di un'applicazione
                             //Messaggio: len-'r'-Codice processo App
                             case 'r':
-                                stream.Read(readBuffer, 0, len);
+                                Stream.Read(readBuffer, 0, len);
                                 uint prox = BitConverter.ToUInt32(readBuffer, 0);
                                 Apps.Remove(Apps.Where(i => i.Process == prox).Single());
-                                applicazioni.Remove(prox);
                                 break;
                             //Focus cambiato
                             //Messaggio: len-'f'-Codice processo App
                             case 'f':
-                                stream.Read(readBuffer, 0, len);
+                                Stream.Read(readBuffer, 0, len);
                                 uint proc = BitConverter.ToUInt32(readBuffer, 0);
                                 foreach (var app in Apps)
                                 { 
@@ -270,7 +291,7 @@ namespace Client
                                 }
                                 Apps.Where(i => i.Process == proc).Single().Focus = true;
                                 Apps.Where(i => i.Process == proc).Single().TempoF.Start();
-                                processoFocus = proc;
+                                ProcessoFocus = proc;
                                 break;
                             default:
                                 break;
@@ -298,12 +319,14 @@ namespace Client
             //Finché non ci sono applicazioni nel dizionario è inutile monitorare.
             lock (key)
                 Monitor.Wait(key);
-
             //Il monitoraggio dura fino alla fine della connessione
-            while (connesso)
+            while (Connesso)
             {
-                Applicazione app = Apps.Where(i => i.Process == processoFocus).Single();
-                app.Percentuale = (app.TempoF.Elapsed.Seconds / tempoC.Elapsed.Seconds) * 100;
+                if (ProcessoFocus != 0)
+                {
+                    Applicazione app = Apps.Where(i => i.Process == ProcessoFocus).Single();
+                    app.Percentuale = (app.TempoF.Elapsed.TotalMilliseconds / TempoC.Elapsed.TotalMilliseconds) * 100;
+                }
             }
 
             //Alla fine svuota la tabella
@@ -321,7 +344,7 @@ namespace Client
         private void invia_Click(object sender, RoutedEventArgs e)
         {
             Thread.CurrentThread.Name = "Invio";
-            if (!connesso)
+            if (!Connesso)
             {
                 testo.AppendText("Devi essere connesso per poter inviare tasti all'applicazione in focus!\n");
                 return;
@@ -339,19 +362,19 @@ namespace Client
         /// </summary>
         private void invioFocus()
         {
-            if (combinazione != null)
+            if (Combinazione != null)
             {
-                byte[] cod_proc = BitConverter.GetBytes(processoFocus);
-                byte[] codifica = ASCIIEncoding.ASCII.GetBytes(combinazione);
+                byte[] cod_proc = BitConverter.GetBytes(ProcessoFocus);
+                byte[] codifica = ASCIIEncoding.ASCII.GetBytes(Combinazione);
                 int lung = codifica.Length;
                 byte[] cod_lung = BitConverter.GetBytes(lung);
                 if (BitConverter.IsLittleEndian)
                     Array.Reverse(cod_lung);
                 Action act = () => { testo.AppendText("Sto inviando la combinazione all'applicazione in focus.\n"); };
                 testo.Dispatcher.Invoke(act);
-                stream.Write(cod_lung, 0, 4);
-                stream.Write(cod_proc, 0, 4);
-                stream.Write(codifica, 0, lung);
+                Stream.Write(cod_lung, 0, 4);
+                Stream.Write(cod_proc, 0, 4);
+                Stream.Write(codifica, 0, lung);
             }
             return;
         }
@@ -362,8 +385,8 @@ namespace Client
         /// </summary>
         void w_RaiseCustomEvent(object sender, CustomEventArgs e)
         {
-            combinazione = e.Message;
-            testo.AppendText("Combinazione: " + combinazione + ".\n");
+            Combinazione = e.Message;
+            testo.AppendText("Combinazione: " + Combinazione + ".\n");
         }
     }
 }
