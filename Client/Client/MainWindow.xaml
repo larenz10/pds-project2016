@@ -30,6 +30,15 @@
                 </DataGridTemplateColumn>
                 <DataGridTextColumn Header="Focus (%)" Binding="{Binding Path=Percentuale}"/>
             </DataGrid.Columns>
+            <DataGrid.RowStyle>
+                <Style TargetType="DataGridRow">
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding Focus}" Value="True">
+                            <Setter Property="Background" Value="DeepSkyBlue"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </DataGrid.RowStyle>
         </DataGrid>
     </Grid>
 </Window>
