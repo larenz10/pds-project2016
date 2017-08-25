@@ -36,6 +36,13 @@
                         <DataTrigger Binding="{Binding Focus}" Value="True">
                             <Setter Property="Background" Value="DeepSkyBlue"/>
                         </DataTrigger>
+                        <DataTrigger Binding="{Binding Focus}" Value="False">
+                            <Setter Property="Background" Value="White">
+                                <Setter.Value>
+                                    <ImageBrush/>
+                                </Setter.Value>
+                            </Setter>
+                        </DataTrigger>
                     </Style.Triggers>
                 </Style>
             </DataGrid.RowStyle>
