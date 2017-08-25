@@ -84,23 +84,58 @@
 //	return true;
 //}
 
-HBITMAP NetworkServices::iconToBitmap(HICON hIcon) {
-	HDC hDC = GetDC(NULL);
-	HDC hMemDC = CreateCompatibleDC(hDC);
-	int x = GetSystemMetrics(SM_CXICON);
-	int y = GetSystemMetrics(SM_CYICON);
-	HBITMAP hMemBmp = CreateCompatibleBitmap(hDC, x, y);
-	HBITMAP hResultBmp = NULL;
-	HGDIOBJ hOrgBMP = SelectObject(hMemDC, hMemBmp);
+DWORD NetworkServices::BitmapToBuffer(HBITMAP hBitmap, HDC hdc, BYTE **buffer) {
 
-	DrawIconEx(hMemDC, 0, 0, hIcon, x, y, 0, NULL, DI_NORMAL);
+	PBITMAPINFO pbi;
+	WORD cClrBits = 0;
+	int res;
+	BITMAP bitMask;
 
-	hResultBmp = hMemBmp;
-	hMemBmp = NULL;
+	// Convert the color format to a count of bits.  
+	GetObject(hBitmap, sizeof(BITMAP), (LPSTR)&bitMask);
+	cClrBits = (WORD)(bitMask.bmPlanes * bitMask.bmBitsPixel);
+	if (cClrBits == 1)
+		cClrBits = 1;
+	else if (cClrBits <= 4)
+		cClrBits = 4;
+	else if (cClrBits <= 8)
+		cClrBits = 8;
+	else if (cClrBits <= 16)
+		cClrBits = 16;
+	else if (cClrBits <= 24)
+		cClrBits = 24;
+	else cClrBits = 32;
 
-	SelectObject(hMemDC, hOrgBMP);
-	DeleteDC(hMemDC);
-	ReleaseDC(NULL, hDC);
-	DestroyIcon(hIcon);
-	return hResultBmp;
-}
+	// Allocate memory for the BITMAPINFO structure. (This structure  
+	// contains a BITMAPINFOHEADER structure and an array of RGBQUAD  
+	// data structures.)  
+
+	if (cClrBits < 24)
+		pbi = (PBITMAPINFO)malloc(sizeof(BITMAPINFOHEADER) + sizeof(RGBQUAD) * (1 << cClrBits));
+	// There is no RGBQUAD array for these formats: 24-bit-per-pixel or 32-bit-per-pixel 
+	else
+		pbi = (PBITMAPINFO)malloc(sizeof(BITMAPINFOHEADER));
+
+	// Initialize the fields in the BITMAPINFO structure. 
+	pbi->bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+	pbi->bmiHeader.biWidth = bitMask.bmWidth;
+	pbi->bmiHeader.biHeight = bitMask.bmHeight;
+	pbi->bmiHeader.biPlanes = bitMask.bmPlanes;
+	pbi->bmiHeader.biBitCount = bitMask.bmBitsPixel;
+	if (cClrBits < 24)
+		pbi->bmiHeader.biClrUsed = (1 << cClrBits);
+	pbi->bmiHeader.biCompression = BI_RGB; // If the bitmap is not compressed, set the BI_RGB flag. 
+										   // Compute the number of bytes in the array of color indices and store the result in biSizeImage.  
+										   // The width must be DWORD aligned unless the bitmap is RLE compressed. 
+	pbi->bmiHeader.biSizeImage = ((pbi->bmiHeader.biWidth * cClrBits + 31) & ~31) / 8 * pbi->bmiHeader.biHeight;
+	// Set biClrImportant to 0, indicating that all of the device colors are important.  
+	pbi->bmiHeader.biClrImportant = 0;
+	// create the bitmap buffer
+	*buffer = (BYTE*)malloc(pbi->bmiHeader.biSizeImage);
+	DeleteObject(&bitMask);
+	// get the actual bitmap buffer
+	if (0 == GetDIBits(hdc, (HBITMAP)hBitmap, 0, (WORD)pbi->bmiHeader.biHeight, *buffer, pbi, DIB_RGB_COLORS))
+		return (DWORD)0;
+	else
+		return pbi->bmiHeader.biSizeImage;
+	}

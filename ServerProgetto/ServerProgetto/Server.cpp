@@ -3,86 +3,198 @@
 
 BOOL CALLBACK enumWindowsProc(HWND hWnd, LPARAM lParam) {
 	BOOL focus = false;
-	std::wstring nomeApp;
-	DWORD pid;
-	HICON hIcon;
-	HBITMAP hBitmap = NULL;
-	BITMAP bitmap;
-
+	std::wstring nomeApp, pathApp;
+	DWORD pid, nBytes;
+	HANDLE hProcess;
+	HDC hdc;
 	Server *thisServer = reinterpret_cast<Server *>(lParam);
 
-	/* leggo le info dell'applicazione solo se è dotata di interfaccia grafica */
-	if (IsWindowVisible(hWnd) != 0) {	/*	c'è interfaccia grafica	*/
+
+
+	if (thisServer->IsAltTabWindow(hWnd)) {
+		// la finestra ha un'interfaccia grafica
+
 		const int bufferLength = GetWindowTextLength(hWnd) + 1; /* lunghezza della stringa di testo */
 		nomeApp.resize(bufferLength); /* alloco stringa di lunghezza appropriata */
 		int textResult = GetWindowText(hWnd, &nomeApp[0], bufferLength);
-		nomeApp.resize(bufferLength - 1); /* resize per eliminare eventuali ambigui doppi valori NULL di terminazione */
+		nomeApp.resize(bufferLength - 1);
+		GetWindowThreadProcessId(hWnd, &pid);	/*	processo che gestisce l'applicazione */
+		Applicazione app(nomeApp, pid);
+		hdc = GetDC(hWnd);
+		// Create a compatible DC which is used in a BitBlt from the window DC
+		pathApp.resize(MAX_PATH);
+		hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, pid);
+		if (hProcess != NULL) {
+			HICON hIcon;
 
-		if (textResult != 0) {
-			GetWindowThreadProcessId(hWnd, &pid);	/*	processo che gestisce l'applicazione */
+			textResult = GetModuleFileNameEx(hProcess, NULL, &pathApp[0], MAX_PATH);
+			pathApp.resize(textResult);
+			if ((hIcon = (HICON)GetClassLong(hWnd, GCL_HICON)) != NULL) {
+				// è presente un'icona
+				ICONINFO iconInfo = { 0 };
+				BYTE *maskBuffer = NULL;
+				BITMAP bitMask, bitColor;
 
-			std::wcout << L"nome applicazione : " << nomeApp.c_str() << std::endl;
-			std::cout << "pid applicazione: " << pid << std::endl;
-
-			Applicazione app(nomeApp, pid);
-
-			hIcon = (HICON)GetClassLongPtr(hWnd, GCLP_HICON); /* NULL nel caso l'applicazione non abbia icona */
-			if (hIcon != NULL) { /* l'applicazione ha icona */
-				hBitmap = NetworkServices::iconToBitmap(hIcon);
-
-				// ottengo la BITMAP da HBITMAP
-				GetObject(hBitmap, sizeof(BITMAP), &bitmap); // fino a qui ok!
-
-				int cClrBits = bitmap.bmPlanes*bitmap.bmBitsPixel;
-
-				BITMAPINFO bi;
-				memset(&bi, 0, sizeof(BITMAPINFO));
-
-				bi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
-				bi.bmiHeader.biWidth = bitmap.bmWidth;
-				bi.bmiHeader.biHeight = bitmap.bmHeight;
-				bi.bmiHeader.biPlanes = bitmap.bmPlanes;
-				bi.bmiHeader.biBitCount = bitmap.bmBitsPixel;
-				bi.bmiHeader.biCompression = BI_RGB;
-				//				bi.bmiHeader.biSizeImage = ((bi.bmiHeader.biWidth * cClrBits + 31) & ~31) / 8 * bi.bmiHeader.biHeight;  commentato perchè deve essere zero se si usa BI_RGB
-				if (cClrBits<24)
-				{
-					bi.bmiHeader.biClrUsed = (1 << cClrBits);
+				// Retrieve the bitmap color format, width, and height. 
+				GetIconInfo(hIcon, &iconInfo);
+				//GetObject(iconInfo.hbmMask, sizeof(BITMAP), (LPSTR)&bitMask);
+				nBytes = NetworkServices::BitmapToBuffer(iconInfo.hbmMask, hdc, &maskBuffer);
+				if (nBytes <= 0) {
+					app.setExistIcon(false);
 				}
-
-				DWORD dwBmpSize = ((bitmap.bmWidth * bi.bmiHeader.biBitCount + 31) / 32) * 4 * bitmap.bmHeight;
-
-				// Starting with 32-bit Windows, GlobalAlloc and LocalAlloc are implemented as wrapper functions that 
-				// call HeapAlloc using a handle to the process's default heap. Therefore, GlobalAlloc and LocalAlloc 
-				// have greater overhead than HeapAlloc.
-				HANDLE hDIB = GlobalAlloc(GHND, dwBmpSize); /* ottengo memoria dallo heap */
-				char *buf = (char *)GlobalLock(hDIB); /* ottengo il puntatore alla memoria allocata precedentemente */
-
-				GetDIBits(GetDC(NULL), hBitmap, 0, (UINT)bitmap.bmHeight, buf, &bi, DIB_RGB_COLORS);
-
-				app.setIcon(true);
-				std::cout << "icona trovata" << std::endl;
-
-				app.setBitmapBuf(buf, &bi, dwBmpSize);
-
-				//tolgo il blocco e libero il DIB dallo heap
-				GlobalUnlock(hDIB);
-				GlobalFree(hDIB);
-
-				DeleteObject(hBitmap);
+				else {
+					app.setExistIcon(true);
+					app.setBitmaskBuffer(maskBuffer, nBytes);
+					free(maskBuffer);
+					maskBuffer = NULL;
+					//					DeleteObject(&bitMask);
+					//					GetObject(iconInfo.hbmColor, sizeof(BITMAP), (LPSTR)&bitColor);
+					if (iconInfo.hbmColor == NULL)
+						app.setColoredIcon(false);
+					else {
+						nBytes = NetworkServices::BitmapToBuffer(iconInfo.hbmColor, hdc, &maskBuffer);
+						if (nBytes <= 0)
+							app.setColoredIcon(false);
+						else {
+							app.setColoredIcon(true);
+							app.setColorBuffer(maskBuffer, nBytes);
+						}
+						if (maskBuffer != NULL)
+							free(maskBuffer);
+						maskBuffer = NULL;
+						//					DeleteObject(&bitColor);
+					}
+				}
+				//Clean up
+				DestroyIcon(hIcon);
 			}
-			else { /* l'applicazione non ha icona */
-				app.setIcon(false);
-			}
-
-			if (hWnd == GetForegroundWindow()) /* l'applicazione considerata è quella con focus */
-				app.setFocus(true);
-
-			thisServer->addApp(app); 
 		}
+		if (hWnd == GetForegroundWindow()) /* l'applicazione considerata è quella con focus */
+			app.setFocus(true);
+
+		thisServer->addApp(app);
+		
+		ReleaseDC(hWnd, hdc);
 	}
 	return true;
 }
+//
+//
+//	//da qui parte vecchia
+//
+//	/* leggo le info dell'applicazione solo se è dotata di interfaccia grafica */
+//	if (IsWindowVisible(hWnd) != 0) {	/*	c'è interfaccia grafica	*/
+//		const int bufferLength = GetWindowTextLength(hWnd) + 1; /* lunghezza della stringa di testo */
+//		nomeApp.resize(bufferLength); /* alloco stringa di lunghezza appropriata */
+//		int textResult = GetWindowText(hWnd, &nomeApp[0], bufferLength);
+//		nomeApp.resize(bufferLength - 1); /* resize per eliminare eventuali ambigui doppi valori NULL di terminazione */
+//
+//		if (textResult != 0) {
+//			GetWindowThreadProcessId(hWnd, &pid);	/*	processo che gestisce l'applicazione */
+//
+//			std::wcout << L"nome applicazione : " << nomeApp.c_str() << std::endl;
+//			std::cout << "pid applicazione: " << pid << std::endl;
+//
+//			Applicazione app(nomeApp, pid);
+//
+//			hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, pid);
+//			if (hProcess != NULL) {
+//				HMODULE hMod;
+//				DWORD cbNeeded;
+//				BITMAPINFO bi = {0};
+//				int cClrBits;
+//				HDC hdc = GetDC(hWnd);
+//
+//				if (EnumProcessModules(hProcess, &hMod, sizeof(hMod), &cbNeeded)) {
+//					if ((hIcon = (HICON)GetClassLong(hWnd, GCL_HICON)) != NULL) {
+////					if ((hIcon = ExtractIcon(GetModuleHandle(NULL), &nomeApp[0], 0)) != NULL) {
+//						GetIconInfo(hIcon, &iconInfo);
+//
+//						/*GetObject(iconInfo.hbmMask, sizeof(BITMAP), &bitMask);
+//						int maskSize = bitMask.bmWidth * bitMask.bmHeight * bitMask.bmBitsPixel / 8;
+//						cClrBits = bitMask.bmPlanes*bitMask.bmBitsPixel;*/
+////						memset(&bi, 0, sizeof(BITMAPINFO));
+//						bi.bmiHeader.biSize = sizeof(bi.bmiHeader);
+//						// Get the BITMAPINFO structure from the bitmap
+//						if (0 == GetDIBits(hdc, iconInfo.hbmMask, 0, 0, NULL, &bi, DIB_RGB_COLORS)) {
+//							std::cout << "error in the bitmask read" << std::endl;
+//							return false;
+//						}
+//						// create the bitmap buffer
+//						maskBuffer = new BYTE[bi.bmiHeader.biSizeImage];
+//						bi.bmiHeader.biCompression = BI_RGB;
+//						// get the actual bitmap buffer
+//						int i = GetDIBits(hdc, iconInfo.hbmMask, 0, bi.bmiHeader.biHeight, (LPVOID)maskBuffer, &bi, DIB_RGB_COLORS);
+//						if (i == 0) {
+//							std::cout << "error in the second bitmask read" << std::endl;
+//							return false;
+//						}
+//						for (int i = 0; i < 100; i++) {
+//							std::cout << (int)maskBuffer[i];
+//						}
+//
+//						ReleaseDC(NULL, hdc);
+//						delete[] maskBuffer;
+//					}
+//				}
+//			}
+//
+//			//hIcon = (HICON)GetClassLongPtr(hWnd, GCLP_HICON); /* NULL nel caso l'applicazione non abbia icona */
+//			//if (hIcon != NULL) { /* l'applicazione ha icona */
+//			//	hBitmap = NetworkServices::iconToBitmap(hIcon);
+//
+//			//	// ottengo la BITMAP da HBITMAP
+//			//	GetObject(hBitmap, sizeof(BITMAP), &bitmap); // fino a qui ok!
+//
+//			//	int cClrBits = bitmap.bmPlanes*bitmap.bmBitsPixel;
+//
+//			//	BITMAPINFO bi;
+//			//	memset(&bi, 0, sizeof(BITMAPINFO));
+//
+//			//	bi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+//			//	bi.bmiHeader.biWidth = bitmap.bmWidth;
+//			//	bi.bmiHeader.biHeight = bitmap.bmHeight;
+//			//	bi.bmiHeader.biPlanes = bitmap.bmPlanes;
+//			//	bi.bmiHeader.biBitCount = bitmap.bmBitsPixel;
+//			//	bi.bmiHeader.biCompression = BI_RGB;
+//			//	//				bi.bmiHeader.biSizeImage = ((bi.bmiHeader.biWidth * cClrBits + 31) & ~31) / 8 * bi.bmiHeader.biHeight;  commentato perchè deve essere zero se si usa BI_RGB
+//			//	if (cClrBits<24)
+//			//	{
+//			//		bi.bmiHeader.biClrUsed = (1 << cClrBits);
+//			//	}
+//
+//			//	DWORD dwBmpSize = ((bitmap.bmWidth * bi.bmiHeader.biBitCount + 31) / 32) * 4 * bitmap.bmHeight;
+//
+//			//	// Starting with 32-bit Windows, GlobalAlloc and LocalAlloc are implemented as wrapper functions that 
+//			//	// call HeapAlloc using a handle to the process's default heap. Therefore, GlobalAlloc and LocalAlloc 
+//			//	// have greater overhead than HeapAlloc.
+//			//	HANDLE hDIB = GlobalAlloc(GHND, dwBmpSize); /* ottengo memoria dallo heap */
+//			//	char *buf = (char *)GlobalLock(hDIB); /* ottengo il puntatore alla memoria allocata precedentemente */
+//
+//			//	GetDIBits(GetDC(NULL), hBitmap, 0, (UINT)bitmap.bmHeight, buf, &bi, DIB_RGB_COLORS);
+//
+//			//	app.setIcon(true);
+//			//	std::cout << "icona trovata" << std::endl;
+//
+//			//	app.setBitmapBuf(buf, &bi, dwBmpSize);
+//
+//			//	//tolgo il blocco e libero il DIB dallo heap
+//			//	GlobalUnlock(hDIB);
+//			//	GlobalFree(hDIB);
+//
+//			//	DeleteObject(hBitmap);
+//			//}
+//			//else { /* l'applicazione non ha icona */
+//			//	app.setIcon(false);
+//			//}
+//
+//			if (hWnd == GetForegroundWindow()) /* l'applicazione considerata è quella con focus */
+//				app.setFocus(true);
+//
+////			thisServer->addApp(app); 
+//		}
+//	}
+
 
 Server::Server(PCSTR port)
 {
@@ -181,18 +293,22 @@ template <typename Writer> void Server::serialize(Writer &writer, Applicazione a
 
 	writer.StartObject();
 
-	writer.String("name");
+	writer.String("Name");
 	writer.String(str.c_str(), str.size());
-	writer.String("process");
+	writer.String("Process");
 	writer.Uint(a.getProcess());
-	writer.String("existIcon");
-	writer.Bool(a.getIcon());
-	writer.String("bitmapBuf");
-	if (a.getIcon())
-		writer.String(a.getBitmapBuf().c_str(), a.getBitmapBuf().size());
+	writer.String("BitmaskBuffer");
+	if (a.getExistIcon()) {
+		writer.String(a.getBitmaskBuffer().c_str(), a.getBitmaskBuffer().size());
+		writer.String("ColorBuffer");
+		if(a.getColoredIcon())
+			writer.String(a.getColorBuffer().c_str(), a.getColorBuffer().size());
+		else
+			writer.Null();
+	}		
 	else
 		writer.Null();
-	writer.String("focus");
+	writer.String("Focus");
 	writer.Bool(a.getFocus());
 
 	writer.EndObject();
@@ -214,10 +330,10 @@ int Server::sendApp(Applicazione app) {
 	std::string str(buffer.begin(), buffer.end());
 	result = send(ClientSocket, str.c_str(), buffer.size(), 0);
 	if (result != buffer.size())
-		std::cout << "errore nell'invio dei dati..." << std::endl;
+		std::cout << "errore nell'invio dei dati..."<< std::endl;
 	else
 		std::cout << "dati inviati con successo!" << std::endl;
-	
+
 	/* pulisco il buffer e stringa */
 	sb.Clear();
 	writer.Reset(sb);
@@ -228,6 +344,44 @@ int Server::sendApp(Applicazione app) {
 
 std::vector<Applicazione> Server::getApplicazioni() {
 	return applicazioni;
+}
+
+
+void Server::deleteApplicazioni() {
+	applicazioni.clear();
+}
+
+
+bool Server::IsAltTabWindow(HWND hwnd){
+	TITLEBARINFO ti;
+	HWND hwndTry, hwndWalk = NULL;
+
+	if (!IsWindowVisible(hwnd))
+		return FALSE;
+
+	hwndTry = GetAncestor(hwnd, GA_ROOTOWNER);
+	while (hwndTry != hwndWalk)
+	{
+		hwndWalk = hwndTry;
+		hwndTry = GetLastActivePopup(hwndWalk);
+		if (IsWindowVisible(hwndTry))
+			break;
+	}
+	if (hwndWalk != hwnd)
+		return FALSE;
+
+	// the following removes some task tray programs and "Program Manager"
+	ti.cbSize = sizeof(ti);
+	GetTitleBarInfo(hwnd, &ti);
+	if (ti.rgstate[0] & STATE_SYSTEM_INVISIBLE)
+		return FALSE;
+
+	// Tool windows should not be displayed either, these do not appear in the
+	// task bar.
+	if (GetWindowLong(hwnd, GWL_EXSTYLE) & WS_EX_TOOLWINDOW)
+		return FALSE;
+
+	return TRUE;
 }
 
 Server::~Server()

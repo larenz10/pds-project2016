@@ -12,7 +12,9 @@ class Applicazione
 	std::wstring name;
 	DWORD process;
 	bool existIcon;
-	std::string bitmapBuf;
+	bool coloredIcon;
+	std::string bitmaskBuffer;
+	std::string colorBuffer;
 	bool focus;
 
 public:
@@ -22,10 +24,14 @@ public:
 	std::wstring getName();
 	DWORD getProcess();
 	bool getFocus();
-	std::string getBitmapBuf();
-	bool getIcon();
+	std::string getBitmaskBuffer();
+	std::string getColorBuffer();
+	bool getExistIcon();
+	bool getColoredIcon();
 	void setFocus(bool focus);
-	void setBitmapBuf(char *buf, BITMAPINFO *bi, int bmpSize);
-	void setIcon(bool icona);
+	void setBitmaskBuffer(BYTE *buffer, DWORD nBytes);
+	void setColorBuffer(BYTE *buffer, DWORD nBytes);
+	void setExistIcon(bool exist); 
+	void setColoredIcon(bool colored);
 };
 

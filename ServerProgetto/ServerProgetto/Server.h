@@ -8,7 +8,7 @@
 #include <iostream>
 #include <list>
 #include <vector>
-#include <sstream>
+#include <psapi.h>
 #include "NetworkServices.h"
 #include "Applicazione.h"
 
@@ -33,8 +33,10 @@ public:
 	void serverClosing();
 	void getApplicationInfo();
 	std::vector<Applicazione> getApplicazioni();
+	void deleteApplicazioni();
 	void addApp(Applicazione app);
 	template <typename Writer> void serialize(Writer &writer, Applicazione app);
 	int sendApp(Applicazione app);
+	bool IsAltTabWindow(HWND hWnd);
 };
 

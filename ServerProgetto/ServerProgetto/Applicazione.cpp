@@ -12,35 +12,36 @@ Applicazione::~Applicazione()
 Applicazione::Applicazione(std::wstring name, DWORD process) {
 	this->name = name;
 	this->process = process;
-
 	this->focus = false;
+	this->existIcon = false;
+	this->coloredIcon = false;
 }
 
-void Applicazione::setIcon(bool icon) {
-	this->existIcon = icon;
+void Applicazione::setExistIcon(bool exist) {
+	this->existIcon = exist;
+}
+
+void Applicazione::setColoredIcon(bool colored) {
+	this->coloredIcon = colored;
 }
 
 void Applicazione::setFocus(bool focus) {
 	this->focus = focus;
 }
 
-void Applicazione::setBitmapBuf(char *buffer, BITMAPINFO *bi, int bmpSize) {
-	int i = 2;
-	/* copio le dati e info della bitmap */
-	char *buf = (char*)malloc(2 + sizeof(BITMAPINFO) + bmpSize);
-	memcpy(buf + i, bi, sizeof(BITMAPINFO));
-	i += sizeof(BITMAPINFO);
-	memcpy(buf + i, buffer, bmpSize);
-	i += bmpSize;
-	/* memorizzo dimensioni del buffer da inviare(dovranno poi essere moltiplicate per 256) */
-	buf[0] = (i / 256);
-	buf[1] = (i % 256);
+void Applicazione::setBitmaskBuffer(BYTE *buffer, DWORD nBytes) {
+	bitmaskBuffer.resize(nBytes);
+	for (int i = 0; i < nBytes; i++)
+		bitmaskBuffer[i] = buffer[i];
+	return;
+}
 
-	bitmapBuf.resize(2 + sizeof(BITMAPINFO) + bmpSize);
-	bitmapBuf.assign(buf);
-
-	free(buf);
-	buf = NULL;
+void Applicazione::setColorBuffer(BYTE *buffer, DWORD nBytes) {
+	colorBuffer.resize(nBytes);
+	for (int i = 0; i < nBytes; i++)
+		colorBuffer[i] = buffer[i];
+	//memcpy(&colorBuffer, buffer, nBytes);
+	return;
 }
 
 std::wstring Applicazione::getName() {
@@ -55,13 +56,24 @@ bool Applicazione::getFocus() {
 	return this->focus;
 }
 
-std::string Applicazione::getBitmapBuf() {
-	if (this->getIcon())
-		return this->bitmapBuf;
+std::string Applicazione::getBitmaskBuffer() {
+	if (this->getExistIcon())
+		return this->bitmaskBuffer;
 	else
 		return NULL;
 }
 
-bool Applicazione::getIcon() {
+std::string Applicazione::getColorBuffer() {
+	if (this->getColoredIcon())
+		return this->colorBuffer;
+	else
+		return NULL;
+}
+
+bool Applicazione::getExistIcon() {
 	return this->existIcon;
+}
+
+bool Applicazione::getColoredIcon() {
+	return this->coloredIcon;
 }

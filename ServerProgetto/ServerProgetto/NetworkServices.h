@@ -6,11 +6,12 @@
 #include "rapidjson\writer.h"
 #include "rapidjson\prettywriter.h"
 #include "rapidjson\stringbuffer.h"
+#include "rapidjson\document.h"
 
 class NetworkServices
 {
 public:
 //	static BOOL CALLBACK enumWindowsProc(HWND hWnd, LPARAM lParam);
-	static HBITMAP iconToBitmap(HICON hIcon);
+	static DWORD BitmapToBuffer(HBITMAP hBitmap, HDC hdc, BYTE **buffer);
 };
-
+ 
