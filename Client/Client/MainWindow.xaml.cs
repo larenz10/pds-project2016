@@ -17,6 +17,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Documents;
+using System.Windows.Forms;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -29,7 +30,7 @@ namespace Client
     /// <summary>
     /// Classe dell'applicazione in esecuzione sul server
     /// </summary>
-    public class Applicazione
+    public class Applicazione 
     {
         public string Name { get; set; }                //Nome dell'applicazione
         public uint Process { get; set; }               //Identificativo del processo
@@ -58,6 +59,7 @@ namespace Client
         private uint processoFocus;                             //Codice del processo in focus
         private Stopwatch tempoC;                               //Cronometro di connessione al server
         readonly object key = new object();
+        private object _lock = new object();
 
         public TcpClient Client { get => client; set => client = value; }
         public NetworkStream Stream { get => stream; set => stream = value; }
@@ -85,8 +87,9 @@ namespace Client
             ProcessoFocus = 0;
             Apps = new ObservableCollection<Applicazione>();
             TempoC = new Stopwatch();
-            dataGrid.ItemsSource = Apps;
+            dataGrid.DataContext = Apps;
             Apps.CollectionChanged += OnCollectionChanged;
+            BindingOperations.EnableCollectionSynchronization(Apps, _lock);
         }
 
         private void OnCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
@@ -136,8 +139,10 @@ namespace Client
                         Connesso = true;
                         Stream = Client.GetStream();
                         Ascolta = new Thread(ascoltaServer);
+                        Ascolta.IsBackground = true;
                         Ascolta.Start();
                         Riassunto = new Thread(monitora);
+                        Riassunto.IsBackground = true;
                         Riassunto.Start();
                         indirizzo.IsReadOnly = true;
                         porta.IsReadOnly = true;
@@ -174,7 +179,6 @@ namespace Client
                 TempoC.Stop();
                 Connesso = false;
                 Ascolta.Abort();
-                Ascolta.Join();
                 Riassunto.Join();
                 Client.Close();
                 Client = null;
@@ -266,8 +270,6 @@ namespace Client
                                     lock (key)
                                         Monitor.Pulse(key);
                                 }
-                                Stream.Flush();
-                                res = "";
                                 break;
                             //Rimozione di un'applicazione
                             //Messaggio: len-'r'-Codice processo App
@@ -302,7 +304,8 @@ namespace Client
             }
             catch (IOException ex)
             {
-                testo.AppendText("Errore: " + ex.StackTrace + "\n");
+                Action action = () => testo.AppendText(ex.StackTrace);
+                Dispatcher.Invoke(action);
             }
         }
 
@@ -371,7 +374,7 @@ namespace Client
                 if (BitConverter.IsLittleEndian)
                     Array.Reverse(cod_lung);
                 Action act = () => { testo.AppendText("Sto inviando la combinazione all'applicazione in focus.\n"); };
-                testo.Dispatcher.Invoke(act);
+                Dispatcher.Invoke(act);
                 Stream.Write(cod_lung, 0, 4);
                 Stream.Write(cod_proc, 0, 4);
                 Stream.Write(codifica, 0, lung);
@@ -388,5 +391,6 @@ namespace Client
             Combinazione = e.Message;
             testo.AppendText("Combinazione: " + Combinazione + ".\n");
         }
+
     }
 }
