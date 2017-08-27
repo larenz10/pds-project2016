@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:Client"
         mc:Ignorable="d"
         Title="Client" Height="350" Width="700" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Auto" Background="White" Icon="icon.ico" ShowInTaskbar="False">
-    <Grid>
+    <Grid HorizontalAlignment="Right">
         <Button x:Name="connetti" Content="Connetti" HorizontalAlignment="Left" Margin="502,10,0,0" VerticalAlignment="Top" Width="180" Height="23" Click="connetti_Click"/>
         <TextBlock x:Name="textBlock" HorizontalAlignment="Left" Margin="10,10,0,0" TextWrapping="Wrap" Text="Indirizzo" VerticalAlignment="Top" Height="23" FontSize="14" Width="55"/>
         <TextBox x:Name="indirizzo" HorizontalAlignment="Left" Height="23" Margin="70,10,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="120" FontSize="14"/>
@@ -14,34 +14,27 @@
         <TextBox x:Name="porta" HorizontalAlignment="Left" Height="23" Margin="251,10,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="120" FontSize="14"/>
         <TextBox x:Name="testo" HorizontalAlignment="Left" Height="271" Margin="10,38,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="331" IsReadOnly="True"/>
         <Button x:Name="invia" Content="Invia tasti all'app in focus" HorizontalAlignment="Left" Margin="502,286,0,0" VerticalAlignment="Top" Width="180" Height="23" Click="invia_Click"/>
-        <DataGrid x:Name ="dataGrid" HorizontalAlignment="Right" Height="243" 
-                  Margin="0,38,10,0" VerticalAlignment="Top" Width="326"
-                  SelectionUnit="FullRow" SelectionMode="Single"
-                  HeadersVisibility="All" IsReadOnly="True" AutoGenerateColumns="False">
-            <DataGrid.Columns>
-                <DataGridTextColumn Header="Applicazione" Binding="{Binding Name}"/>
-                <DataGridTextColumn Header="Processo" Binding="{Binding Process}"/>
-                <DataGridTemplateColumn Header="Icona">
-                    <DataGridTemplateColumn.CellTemplate>
-                        <DataTemplate>
-                            <Image Source="{Binding Icona}"/>
-                        </DataTemplate>
-                    </DataGridTemplateColumn.CellTemplate>
-                </DataGridTemplateColumn>
-                <DataGridTextColumn Header="Focus (%)" Binding="{Binding Percentuale}"/>
-            </DataGrid.Columns>
-            <DataGrid.RowStyle>
-                <Style TargetType="DataGridRow">
+        <ListView x:Name="listView" Margin="0,38,5,38" Grid.Row="0" IsSynchronizedWithCurrentItem="True" 
+                  ScrollViewer.HorizontalScrollBarVisibility="Disabled" HorizontalAlignment="Right" Width="321">
+            <ListView.View>
+                <GridView x:Name="grdNames">
+                    <GridViewColumn Header="Applicazione" DisplayMemberBinding="{Binding Name}"/>
+                    <GridViewColumn Header="Processo"  DisplayMemberBinding="{Binding Process}"/>
+                    <GridViewColumn Header="Percentuale" DisplayMemberBinding="{Binding Percentuale}"/>
+                </GridView>
+            </ListView.View>
+            <ListView.Resources>
+                <Style TargetType="{x:Type ListViewItem}">
                     <Style.Triggers>
                         <DataTrigger Binding="{Binding Focus}" Value="True">
-                            <Setter Property="Background" Value="DeepSkyBlue"/>
+                            <Setter Property="Background" Value="LightSkyBlue" />
                         </DataTrigger>
                         <DataTrigger Binding="{Binding Focus}" Value="False">
-                            <Setter Property="Background" Value="White"/>
+                            <Setter Property="Background" Value="White" />
                         </DataTrigger>
                     </Style.Triggers>
                 </Style>
-            </DataGrid.RowStyle>
-        </DataGrid>
+            </ListView.Resources>
+        </ListView>
     </Grid>
 </Window>

@@ -4,7 +4,6 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Data;
 using System.Diagnostics;
-using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -28,52 +27,28 @@ using Newtonsoft.Json;
 namespace Client
 {
     /// <summary>
-    /// Classe dell'applicazione in esecuzione sul server
-    /// </summary>
-    public class Applicazione 
-    {
-        public string Name { get; set; }                //Nome dell'applicazione
-        public uint Process { get; set; }               //Identificativo del processo
-        //public bool ExistIcon { get; set; }             //Abbiamo l'icona?
-        //public bool ColoredIcon { get; set; }           //L'icona è colorata?
-        public Bitmap Icona { get; set; }               //Definizione dell'icona
-        public string BitmaskBuffer { get; set; }       //Buffer di bit per la maschera
-        public string ColorBuffer { get; set; }         //Buffer di bit per i colori
-        public bool Focus { get; set; }                 //L'app ha focus?
-        public Stopwatch TempoF { get; set; }           //Cronometro di focus dell'app
-        public double Percentuale { get; set; }         //Percentuale di focus
-    }
-
-    /// <summary>
     /// Logica di interazione per MainWindow.xaml
     /// </summary>
-    public partial class MainWindow : Window
+    public partial class MainWindow : Window, INotifyCollectionChanged
     {
-        private TcpClient client;                               //Fornisce connessioni client per i servizi di rete TCP.
-        private NetworkStream stream;                           //Stream per leggere e scrivere dal server
-        private bool connesso;                                  //Variabile booleana che identifica la connessione attiva
-        private Thread ascolta;                                 //Thread in ascolto sul server
-        private Thread riassunto;                               //Thread che gestisce il riassunto
-        private ObservableCollection<Applicazione> apps;        //Collezione che contiene le applicazioni del server
-        private string combinazione;                            //Combinazione da inviare
-        private uint processoFocus;                             //Codice del processo in focus
-        private Stopwatch tempoC;                               //Cronometro di connessione al server
+        private TcpClient Client { get; set; }                          //Fornisce connessioni client per i servizi di rete TCP.
+        private NetworkStream Stream { get; set; }                      //Stream per leggere e scrivere dal server
+        private bool Connesso { get; set; }                             //Variabile booleana che identifica la connessione attiva
+        private Thread Ascolta { get; set; }                            //Thread in ascolto sul server
+        private Thread Riassunto { get; set; }                          //Thread che gestisce il riassunto
+        private ObservableCollection<Applicazione> Apps { get; set; }   //Collezione che contiene le applicazioni del server
+        private string Combinazione { get; set; }                       //Combinazione da inviare
+        private uint ProcessoFocus { get; set; }                        //Codice del processo in focus
+        private Stopwatch TempoC { get; set; }                          //Cronometro di connessione al server
         readonly object key = new object();
         private object _lock = new object();
 
-        public TcpClient Client { get => client; set => client = value; }
-        public NetworkStream Stream { get => stream; set => stream = value; }
-        public bool Connesso { get => connesso; set => connesso = value; }
-        public Thread Ascolta { get => ascolta; set => ascolta = value; }
-        public Thread Riassunto { get => riassunto; set => riassunto = value; }
-        public string Combinazione { get => combinazione; set => combinazione = value; }
-        public uint ProcessoFocus { get => processoFocus; set => processoFocus = value; }
-        public Stopwatch TempoC { get => tempoC; set => tempoC = value; }
-        public ObservableCollection<Applicazione> Apps { get => apps; set => apps = value; }
+        public event NotifyCollectionChangedEventHandler CollectionChanged;
 
         public MainWindow()
         {
             InitializeComponent();
+            this.Show();
             Thread.CurrentThread.Name = "Main";
             SetUp();
         }
@@ -86,19 +61,10 @@ namespace Client
             Combinazione = null;
             ProcessoFocus = 0;
             Apps = new ObservableCollection<Applicazione>();
-            TempoC = new Stopwatch();
-            dataGrid.DataContext = Apps;
-            Apps.CollectionChanged += OnCollectionChanged;
             BindingOperations.EnableCollectionSynchronization(Apps, _lock);
+            listView.ItemsSource = Apps;
+            TempoC = new Stopwatch();
         }
-
-        private void OnCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
-        {
-            ObservableCollection<Applicazione> appSender = sender as ObservableCollection<Applicazione>;
-            NotifyCollectionChangedAction action = e.Action;
-        }
-
-
 
         /// <summary>
         /// Questo metodo gestisce la connessione al server all'indirizzo
@@ -181,6 +147,7 @@ namespace Client
                 Ascolta.Abort();
                 Riassunto.Join();
                 Client.Close();
+                ProcessoFocus = 0;
                 Client = null;
                 connetti.Content = "Connetti";
                 indirizzo.IsReadOnly = false;
@@ -235,31 +202,40 @@ namespace Client
                     {
                         Stream.Read(readBuffer, 0, 4);
                         len = BitConverter.ToInt32(readBuffer, 0);
+                        Array.Clear(readBuffer, 0, 4);
                         Stream.Read(readBuffer, 0, 1);
                         char c = BitConverter.ToChar(readBuffer, 0);
-                        switch(c)
+                        Array.Clear(readBuffer, 0, 1);
+                        switch (c)
                         {
                             //Inserimento nuova applicazione
                             //Messaggio: len-'a'-JSON(App)
                             case 'a':
                                 Stream.Read(readBuffer, 0, len);
                                 string res = Encoding.Default.GetString(readBuffer);
+                                Array.Clear(readBuffer, 0, len);
                                 Applicazione a = new Applicazione();
                                 a = JsonConvert.DeserializeObject<Applicazione>(res);
                                 a.TempoF = new Stopwatch();
-                                if (a.BitmaskBuffer != null)
+                                /*if (a.BitmaskBuffer != null)
                                 {
-                                    IntPtr bitmask = new IntPtr(Convert.ToInt32(a.BitmaskBuffer, 2));
+                                    IntPtr bitmask = new IntPtr(Convert.ToInt32(a.BitmaskBuffer));
                                     if (a.ColorBuffer != null)
                                     {
-                                        IntPtr color = new IntPtr(Convert.ToInt32(a.ColorBuffer, 2));
+                                        IntPtr color = new IntPtr(Convert.ToInt32(a.ColorBuffer));
                                         a.Icona = System.Drawing.Image.FromHbitmap(bitmask, color);
                                     }
                                     else
                                         a.Icona = System.Drawing.Image.FromHbitmap(bitmask);
-                                }
+                                    
+                                }*/
                                 if (a.Focus)
                                 {
+                                    if (ProcessoFocus != 0)
+                                    {
+                                        Apps.Where(i => i.Process == ProcessoFocus).Single().Focus = false;
+                                        Apps.Where(i => i.Process == ProcessoFocus).Single().TempoF.Stop();
+                                    }
                                     a.TempoF.Start();
                                     ProcessoFocus = a.Process;
                                 }
@@ -276,6 +252,8 @@ namespace Client
                             case 'r':
                                 Stream.Read(readBuffer, 0, len);
                                 uint prox = BitConverter.ToUInt32(readBuffer, 0);
+                                if (Apps.Where(i => i.Process == prox).Single().Focus == true)
+                                    ProcessoFocus = 0;
                                 Apps.Remove(Apps.Where(i => i.Process == prox).Single());
                                 break;
                             //Focus cambiato
@@ -283,14 +261,8 @@ namespace Client
                             case 'f':
                                 Stream.Read(readBuffer, 0, len);
                                 uint proc = BitConverter.ToUInt32(readBuffer, 0);
-                                foreach (var app in Apps)
-                                { 
-                                    if (app.Process != proc)
-                                    {
-                                        app.Focus = false;
-                                        app.TempoF.Stop();
-                                    }
-                                }
+                                Apps.Where(i => i.Process == ProcessoFocus).Single().Focus = false;
+                                Apps.Where(i => i.Process == ProcessoFocus).Single().TempoF.Stop();
                                 Apps.Where(i => i.Process == proc).Single().Focus = true;
                                 Apps.Where(i => i.Process == proc).Single().TempoF.Start();
                                 ProcessoFocus = proc;
@@ -303,6 +275,11 @@ namespace Client
                 return;
             }
             catch (IOException ex)
+            {
+                Action action = () => testo.AppendText(ex.StackTrace);
+                Dispatcher.Invoke(action);
+            }
+            catch(Exception ex)
             {
                 Action action = () => testo.AppendText(ex.StackTrace);
                 Dispatcher.Invoke(action);
@@ -327,11 +304,13 @@ namespace Client
             {
                 if (ProcessoFocus != 0)
                 {
-                    Applicazione app = Apps.Where(i => i.Process == ProcessoFocus).Single();
-                    app.Percentuale = (app.TempoF.Elapsed.TotalMilliseconds / TempoC.Elapsed.TotalMilliseconds) * 100;
+                    Applicazione app = Apps.Where(i => i.Process == ProcessoFocus).SingleOrDefault();
+                    if (app != null)
+                    {
+                        app.Percentuale = (app.TempoF.Elapsed.TotalMilliseconds / TempoC.Elapsed.TotalMilliseconds) * 100;
+                    }
                 }
             }
-
             //Alla fine svuota la tabella
             Apps.Clear();
             return;
@@ -346,7 +325,6 @@ namespace Client
         /// </summary>
         private void invia_Click(object sender, RoutedEventArgs e)
         {
-            Thread.CurrentThread.Name = "Invio";
             if (!Connesso)
             {
                 testo.AppendText("Devi essere connesso per poter inviare tasti all'applicazione in focus!\n");
@@ -356,6 +334,7 @@ namespace Client
             w.RaiseCustomEvent += new EventHandler<CustomEventArgs>(w_RaiseCustomEvent);
             w.ShowDialog();
             Thread inviaTasti = new Thread(invioFocus);
+            inviaTasti.IsBackground = true;
             inviaTasti.Start();
         }
 
@@ -365,10 +344,11 @@ namespace Client
         /// </summary>
         private void invioFocus()
         {
+            Thread.CurrentThread.Name = "Invio";
             if (Combinazione != null)
             {
                 byte[] cod_proc = BitConverter.GetBytes(ProcessoFocus);
-                byte[] codifica = ASCIIEncoding.ASCII.GetBytes(Combinazione);
+                byte[] codifica = Encoding.ASCII.GetBytes(Combinazione);
                 int lung = codifica.Length;
                 byte[] cod_lung = BitConverter.GetBytes(lung);
                 if (BitConverter.IsLittleEndian)
@@ -381,7 +361,7 @@ namespace Client
             }
             return;
         }
-        
+
 
         /// <summary>
         /// Evento che si occupa di prendere la combinazione codificata da Window1.
