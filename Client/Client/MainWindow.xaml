@@ -7,24 +7,17 @@
         mc:Ignorable="d"
         Title="Client" Height="350" Width="700" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Auto" Background="White" Icon="icon.ico" ShowInTaskbar="False">
     <Grid HorizontalAlignment="Right">
-        <Button x:Name="connetti" Content="Connetti" HorizontalAlignment="Left" Margin="502,10,0,0" VerticalAlignment="Top" Width="180" Height="23" Click="connetti_Click"/>
-        <TextBlock x:Name="textBlock" HorizontalAlignment="Left" Margin="10,10,0,0" TextWrapping="Wrap" Text="Indirizzo" VerticalAlignment="Top" Height="23" FontSize="14" Width="55"/>
-        <TextBox x:Name="indirizzo" HorizontalAlignment="Left" Height="23" Margin="70,10,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="120" FontSize="14"/>
-        <TextBlock x:Name="textBlock1" HorizontalAlignment="Left" Margin="210,10,0,0" TextWrapping="Wrap" Text="Porta" VerticalAlignment="Top" Width="36" Height="23" FontSize="14"/>
-        <TextBox x:Name="porta" HorizontalAlignment="Left" Height="23" Margin="251,10,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="120" FontSize="14"/>
-        <TextBox x:Name="testo" HorizontalAlignment="Left" Height="271" Margin="10,38,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="331" IsReadOnly="True"/>
-        <Button x:Name="invia" Content="Invia tasti all'app in focus" HorizontalAlignment="Left" Margin="502,286,0,0" VerticalAlignment="Top" Width="180" Height="23" Click="invia_Click"/>
-        <ListView x:Name="listView" Margin="0,38,5,38" Grid.Row="0" IsSynchronizedWithCurrentItem="True" 
-                  ScrollViewer.HorizontalScrollBarVisibility="Disabled" HorizontalAlignment="Right" Width="321">
-            <ListView.View>
-                <GridView x:Name="grdNames">
-                    <GridViewColumn Header="Applicazione" DisplayMemberBinding="{Binding Name}"/>
-                    <GridViewColumn Header="Processo"  DisplayMemberBinding="{Binding Process}"/>
-                    <GridViewColumn Header="Percentuale" DisplayMemberBinding="{Binding Percentuale}"/>
-                </GridView>
-            </ListView.View>
-            <ListView.Resources>
-                <Style TargetType="{x:Type ListViewItem}">
+        <Button x:Name="connetti" Content="Connetti" Margin="493,10,10,0" VerticalAlignment="Top" Width="180" Height="23" Click="connetti_Click"/>
+        <TextBlock x:Name="textBlock" Margin="10,10,618,0" TextWrapping="Wrap" Text="Indirizzo" VerticalAlignment="Top" Height="23" FontSize="14"/>
+        <TextBox x:Name="indirizzo" Height="23" Margin="70,10,493,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="120" FontSize="14"/>
+        <TextBlock x:Name="textBlock1" Margin="210,10,437,0" TextWrapping="Wrap" Text="Porta" VerticalAlignment="Top" Width="36" Height="23" FontSize="14"/>
+        <TextBox x:Name="porta" Height="23" Margin="251,10,312,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="120" FontSize="14"/>
+        <TextBox x:Name="testo" Height="271" Margin="10,38,342,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="331" IsReadOnly="True"/>
+        <Button x:Name="invia" Content="Invia tasti all'app in focus" Margin="502,286,0,0" VerticalAlignment="Top" Width="180" Height="23" Click="invia_Click"/>
+        <ListView x:Name="listView" Margin="352,38,10,38" Grid.Row="0" IsSynchronizedWithCurrentItem="True">
+            <ListView.ItemContainerStyle>
+                <Style TargetType="ListViewItem">
+                    <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
                     <Style.Triggers>
                         <DataTrigger Binding="{Binding Focus}" Value="True">
                             <Setter Property="Background" Value="LightSkyBlue" />
@@ -34,7 +27,26 @@
                         </DataTrigger>
                     </Style.Triggers>
                 </Style>
-            </ListView.Resources>
+            </ListView.ItemContainerStyle>
+            <ListView.View>
+                <GridView x:Name="grdNames">
+                    <GridViewColumn Header="Applicazione" DisplayMemberBinding="{Binding Name}" Width="100"/>
+                    <GridViewColumn Width="100" Header="Processo" >
+                        <GridViewColumn.CellTemplate >
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Process}" TextAlignment="Center"/>
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                    <GridViewColumn Width="100" Header="Percentuale">
+                        <GridViewColumn.CellTemplate >
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Percentuale}" TextAlignment="Center"/>
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                </GridView>
+            </ListView.View>
         </ListView>
     </Grid>
 </Window>

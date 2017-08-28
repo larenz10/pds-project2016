@@ -29,7 +29,7 @@ namespace Client
     /// <summary>
     /// Logica di interazione per MainWindow.xaml
     /// </summary>
-    public partial class MainWindow : Window, INotifyCollectionChanged
+    public partial class MainWindow : Window
     {
         private TcpClient Client { get; set; }                          //Fornisce connessioni client per i servizi di rete TCP.
         private NetworkStream Stream { get; set; }                      //Stream per leggere e scrivere dal server
@@ -42,8 +42,6 @@ namespace Client
         private Stopwatch TempoC { get; set; }                          //Cronometro di connessione al server
         readonly object key = new object();
         private object _lock = new object();
-
-        public event NotifyCollectionChangedEventHandler CollectionChanged;
 
         public MainWindow()
         {
@@ -144,7 +142,7 @@ namespace Client
             {
                 TempoC.Stop();
                 Connesso = false;
-                Ascolta.Abort();
+                Ascolta.Join();
                 Riassunto.Join();
                 Client.Close();
                 ProcessoFocus = 0;
@@ -192,6 +190,9 @@ namespace Client
         {
             Thread.CurrentThread.Name = "Ascolto";
             bool pronto = false;
+            Action action;
+            uint processo;
+            Applicazione a;
             try
             {
                 byte[] readBuffer = new byte[Client.ReceiveBufferSize];
@@ -200,75 +201,85 @@ namespace Client
                 {
                     if (Stream.CanRead)
                     {
-                        Stream.Read(readBuffer, 0, 4);
-                        len = BitConverter.ToInt32(readBuffer, 0);
-                        Array.Clear(readBuffer, 0, 4);
-                        Stream.Read(readBuffer, 0, 1);
-                        char c = BitConverter.ToChar(readBuffer, 0);
-                        Array.Clear(readBuffer, 0, 1);
-                        switch (c)
-                        {
-                            //Inserimento nuova applicazione
-                            //Messaggio: len-'a'-JSON(App)
-                            case 'a':
-                                Stream.Read(readBuffer, 0, len);
-                                string res = Encoding.Default.GetString(readBuffer);
-                                Array.Clear(readBuffer, 0, len);
-                                Applicazione a = new Applicazione();
-                                a = JsonConvert.DeserializeObject<Applicazione>(res);
-                                a.TempoF = new Stopwatch();
-                                /*if (a.BitmaskBuffer != null)
-                                {
-                                    IntPtr bitmask = new IntPtr(Convert.ToInt32(a.BitmaskBuffer));
-                                    if (a.ColorBuffer != null)
+                        if (Stream.DataAvailable) { 
+                            Stream.Read(readBuffer, 0, 4);
+                            len = BitConverter.ToInt32(readBuffer, 0);
+                            Array.Clear(readBuffer, 0, 4);
+                            Stream.Read(readBuffer, 0, 1);
+                            char c = BitConverter.ToChar(readBuffer, 0);
+                            Array.Clear(readBuffer, 0, 1);
+                            switch (c)
+                            {
+                                //Inserimento nuova applicazione
+                                //Messaggio: len-'a'-JSON(App)
+                                case 'a':
+                                    Stream.Read(readBuffer, 0, len);
+                                    string res = Encoding.Default.GetString(readBuffer);
+                                    Array.Clear(readBuffer, 0, len);
+                                    a = new Applicazione();
+                                    a = JsonConvert.DeserializeObject<Applicazione>(res);
+                                    a.TempoF = new Stopwatch();
+                                    /*if (a.BitmaskBuffer != null)
                                     {
-                                        IntPtr color = new IntPtr(Convert.ToInt32(a.ColorBuffer));
-                                        a.Icona = System.Drawing.Image.FromHbitmap(bitmask, color);
-                                    }
-                                    else
-                                        a.Icona = System.Drawing.Image.FromHbitmap(bitmask);
+                                        IntPtr bitmask = new IntPtr(Convert.ToInt32(a.BitmaskBuffer));
+                                        if (a.ColorBuffer != null)
+                                        {
+                                            IntPtr color = new IntPtr(Convert.ToInt32(a.ColorBuffer));
+                                            a.Icona = System.Drawing.Image.FromHbitmap(bitmask, color);
+                                        }
+                                        else
+                                            a.Icona = System.Drawing.Image.FromHbitmap(bitmask);
                                     
-                                }*/
-                                if (a.Focus)
-                                {
-                                    if (ProcessoFocus != 0)
+                                    }*/
+                                    if (a.Focus)
                                     {
-                                        Apps.Where(i => i.Process == ProcessoFocus).Single().Focus = false;
-                                        Apps.Where(i => i.Process == ProcessoFocus).Single().TempoF.Stop();
+                                        if (ProcessoFocus != 0)
+                                        {
+                                            Apps.Where(i => i.Process == ProcessoFocus).Single().Focus = false;
+                                            Apps.Where(i => i.Process == ProcessoFocus).Single().TempoF.Stop();
+                                        }
+                                        a.TempoF.Start();
+                                        ProcessoFocus = a.Process;
                                     }
+                                    Apps.Add(a);
+                                    action = () => testo.AppendText("Nuova applicazione: " + a.Name + ".\n");
+                                    Dispatcher.Invoke(action);
+                                    if (!pronto)
+                                    {
+                                        pronto = true;
+                                        lock (key)
+                                            Monitor.Pulse(key);
+                                    }
+                                    break;
+                                //Rimozione di un'applicazione
+                                //Messaggio: len-'r'-Codice processo App
+                                case 'r':
+                                    Stream.Read(readBuffer, 0, len);
+                                    processo = BitConverter.ToUInt32(readBuffer, 0);
+                                    if (Apps.Where(i => i.Process == processo).Single().Focus == true)
+                                        ProcessoFocus = 0;
+                                    a = Apps.Where(i => i.Process == processo).Single();
+                                    Apps.Remove(a);
+                                    action = () => testo.AppendText("Applicazione rimossa: " + a.Name + ".\n");
+                                    Dispatcher.Invoke(action);
+                                    break;
+                                //Focus cambiato
+                                //Messaggio: len-'f'-Codice processo App
+                                case 'f':
+                                    Apps.Where(i => i.Process == ProcessoFocus).Single().Focus = false;
+                                    Apps.Where(i => i.Process == ProcessoFocus).Single().TempoF.Stop();
+                                    Stream.Read(readBuffer, 0, len);
+                                    processo = BitConverter.ToUInt32(readBuffer, 0);
+                                    a = Apps.Where(i => i.Process == processo).Single();
+                                    a.Focus = true;
                                     a.TempoF.Start();
-                                    ProcessoFocus = a.Process;
-                                }
-                                Apps.Add(a);
-                                if (!pronto)
-                                {
-                                    pronto = true;
-                                    lock (key)
-                                        Monitor.Pulse(key);
-                                }
-                                break;
-                            //Rimozione di un'applicazione
-                            //Messaggio: len-'r'-Codice processo App
-                            case 'r':
-                                Stream.Read(readBuffer, 0, len);
-                                uint prox = BitConverter.ToUInt32(readBuffer, 0);
-                                if (Apps.Where(i => i.Process == prox).Single().Focus == true)
-                                    ProcessoFocus = 0;
-                                Apps.Remove(Apps.Where(i => i.Process == prox).Single());
-                                break;
-                            //Focus cambiato
-                            //Messaggio: len-'f'-Codice processo App
-                            case 'f':
-                                Stream.Read(readBuffer, 0, len);
-                                uint proc = BitConverter.ToUInt32(readBuffer, 0);
-                                Apps.Where(i => i.Process == ProcessoFocus).Single().Focus = false;
-                                Apps.Where(i => i.Process == ProcessoFocus).Single().TempoF.Stop();
-                                Apps.Where(i => i.Process == proc).Single().Focus = true;
-                                Apps.Where(i => i.Process == proc).Single().TempoF.Start();
-                                ProcessoFocus = proc;
-                                break;
-                            default:
-                                break;
+                                    ProcessoFocus = processo;
+                                    action = () => testo.AppendText("Nuovo focus: " + a.Name + ".\n");
+                                    Dispatcher.Invoke(action);
+                                    break;
+                                default:
+                                    break;
+                            }
                         }
                     }
                 }
@@ -276,12 +287,12 @@ namespace Client
             }
             catch (IOException ex)
             {
-                Action action = () => testo.AppendText(ex.StackTrace);
+                action = () => testo.AppendText(ex.StackTrace);
                 Dispatcher.Invoke(action);
             }
             catch(Exception ex)
             {
-                Action action = () => testo.AppendText(ex.StackTrace);
+                action = () => testo.AppendText(ex.StackTrace);
                 Dispatcher.Invoke(action);
             }
         }
