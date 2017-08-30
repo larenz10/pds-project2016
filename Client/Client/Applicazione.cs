@@ -18,6 +18,11 @@ namespace Client
         private bool _focus;
         private double _percentuale;
 
+        public Applicazione()
+        {
+            TempoF = new Stopwatch();
+        }
+
         public string Name { get; set; }                //Nome dell'applicazione
         public uint Process { get; set; }               //Identificativo del processo
         public Bitmap Icona { get; set; }               //Definizione dell'icona
@@ -53,7 +58,7 @@ namespace Client
                     OnPropertyChanged("Percentuale");
                 }
             }
-        }         //Percentuale di focus
+        }
 
         public event PropertyChangedEventHandler PropertyChanged;
 

@@ -7,14 +7,15 @@
         mc:Ignorable="d"
         Title="Client" Height="350" Width="700" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Auto" Background="White" Icon="icon.ico" ShowInTaskbar="False">
     <Grid HorizontalAlignment="Right">
-        <Button x:Name="connetti" Content="Connetti" Margin="493,10,10,0" VerticalAlignment="Top" Width="180" Height="23" Click="connetti_Click"/>
+        <Button x:Name="connetti" Content="Connetti" Margin="503,10,5,0" VerticalAlignment="Top" Height="23" Click="connetti_Click"/>
         <TextBlock x:Name="textBlock" Margin="10,10,618,0" TextWrapping="Wrap" Text="Indirizzo" VerticalAlignment="Top" Height="23" FontSize="14"/>
         <TextBox x:Name="indirizzo" Height="23" Margin="70,10,493,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="120" FontSize="14"/>
         <TextBlock x:Name="textBlock1" Margin="210,10,437,0" TextWrapping="Wrap" Text="Porta" VerticalAlignment="Top" Width="36" Height="23" FontSize="14"/>
         <TextBox x:Name="porta" Height="23" Margin="251,10,312,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="120" FontSize="14"/>
-        <TextBox x:Name="testo" Height="271" Margin="10,38,342,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="331" IsReadOnly="True"/>
-        <Button x:Name="invia" Content="Invia tasti all'app in focus" Margin="502,286,0,0" VerticalAlignment="Top" Width="180" Height="23" Click="invia_Click"/>
-        <ListView x:Name="listView" Margin="352,38,10,38" Grid.Row="0" IsSynchronizedWithCurrentItem="True">
+        <TextBox x:Name="testo" Height="271" Margin="10,38,356,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" IsReadOnly="True"/>
+        <Button x:Name="invia" Content="Invia tasti all'app in focus" Margin="504,286,5,0" VerticalAlignment="Top" Height="23" Click="invia_Click"/>
+        <ListView x:Name="listView" Margin="336,38,5,33" Grid.Row="0" IsSynchronizedWithCurrentItem="True"
+                  ScrollViewer.HorizontalScrollBarVisibility="Disabled">
             <ListView.ItemContainerStyle>
                 <Style TargetType="ListViewItem">
                     <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
@@ -30,21 +31,32 @@
             </ListView.ItemContainerStyle>
             <ListView.View>
                 <GridView x:Name="grdNames">
-                    <GridViewColumn Header="Applicazione" DisplayMemberBinding="{Binding Name}" Width="100"/>
-                    <GridViewColumn Width="100" Header="Processo" >
-                        <GridViewColumn.CellTemplate >
+                    <GridViewColumn Header="Icona" Width="35"/>
+                    <GridViewColumn Header="Applicazione" DisplayMemberBinding="{Binding Name}" Width="160"/>
+                    <GridViewColumn Width="70" Header="Processo">
+                        <GridViewColumn.CellTemplate>
                             <DataTemplate>
                                 <TextBlock Text="{Binding Process}" TextAlignment="Center"/>
                             </DataTemplate>
                         </GridViewColumn.CellTemplate>
                     </GridViewColumn>
-                    <GridViewColumn Width="100" Header="Percentuale">
+                    <GridViewColumn Width="70" Header="Percentuale">
                         <GridViewColumn.CellTemplate >
                             <DataTemplate>
                                 <TextBlock Text="{Binding Percentuale}" TextAlignment="Center"/>
                             </DataTemplate>
                         </GridViewColumn.CellTemplate>
                     </GridViewColumn>
+                    <GridView.ColumnHeaderContainerStyle>
+                        <Style TargetType="{x:Type GridViewColumnHeader}">
+                            <Setter Property="IsEnabled" Value="False"/>
+                            <Style.Triggers>
+                                <Trigger Property="IsEnabled" Value="False">
+                                    <Setter Property="TextElement.Foreground" Value="Black"/>
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </GridView.ColumnHeaderContainerStyle>
                 </GridView>
             </ListView.View>
         </ListView>

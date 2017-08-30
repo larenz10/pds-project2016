@@ -147,6 +147,7 @@ namespace Client
                 Client.Close();
                 ProcessoFocus = 0;
                 Client = null;
+                Apps.Clear();
                 connetti.Content = "Connetti";
                 indirizzo.IsReadOnly = false;
                 porta.IsReadOnly = false;
@@ -216,32 +217,27 @@ namespace Client
                                     Stream.Read(readBuffer, 0, len);
                                     string res = Encoding.Default.GetString(readBuffer);
                                     Array.Clear(readBuffer, 0, len);
-                                    a = new Applicazione();
                                     a = JsonConvert.DeserializeObject<Applicazione>(res);
-                                    a.TempoF = new Stopwatch();
-                                    /*if (a.BitmaskBuffer != null)
-                                    {
-                                        IntPtr bitmask = new IntPtr(Convert.ToInt32(a.BitmaskBuffer));
-                                        if (a.ColorBuffer != null)
-                                        {
-                                            IntPtr color = new IntPtr(Convert.ToInt32(a.ColorBuffer));
-                                            a.Icona = System.Drawing.Image.FromHbitmap(bitmask, color);
-                                        }
-                                        else
-                                            a.Icona = System.Drawing.Image.FromHbitmap(bitmask);
-                                    
-                                    }*/
+                                    //if (a.BitmaskBuffer != null || a.BitmaskBuffer != "")
+                                    //    disegnaIcona(a);
                                     if (a.Focus)
                                     {
                                         if (ProcessoFocus != 0)
                                         {
-                                            Apps.Where(i => i.Process == ProcessoFocus).Single().Focus = false;
-                                            Apps.Where(i => i.Process == ProcessoFocus).Single().TempoF.Stop();
+                                            lock (_lock)
+                                            {
+                                                Apps.Where(i => i.Process == ProcessoFocus).Single().Focus = false;
+                                                Apps.Where(i => i.Process == ProcessoFocus).Single().TempoF.Stop();
+                                            }
                                         }
                                         a.TempoF.Start();
                                         ProcessoFocus = a.Process;
                                     }
-                                    Apps.Add(a);
+                                    lock (_lock)
+                                    {
+                                        if (Apps.Where(i=>i.Process==a.Process).Count() == 0)
+                                            Apps.Add(a);
+                                    }
                                     action = () => testo.AppendText("Nuova applicazione: " + a.Name + ".\n");
                                     Dispatcher.Invoke(action);
                                     if (!pronto)
@@ -256,10 +252,13 @@ namespace Client
                                 case 'r':
                                     Stream.Read(readBuffer, 0, len);
                                     processo = BitConverter.ToUInt32(readBuffer, 0);
-                                    if (Apps.Where(i => i.Process == processo).Single().Focus == true)
-                                        ProcessoFocus = 0;
-                                    a = Apps.Where(i => i.Process == processo).Single();
-                                    Apps.Remove(a);
+                                    lock(_lock)
+                                    {
+                                        if (Apps.Where(i => i.Process == processo).Single().Focus == true)
+                                            ProcessoFocus = 0;
+                                        a = Apps.Where(i => i.Process == processo).Single();
+                                        Apps.Remove(a);
+                                    }
                                     action = () => testo.AppendText("Applicazione rimossa: " + a.Name + ".\n");
                                     Dispatcher.Invoke(action);
                                     break;
@@ -270,7 +269,10 @@ namespace Client
                                     Apps.Where(i => i.Process == ProcessoFocus).Single().TempoF.Stop();
                                     Stream.Read(readBuffer, 0, len);
                                     processo = BitConverter.ToUInt32(readBuffer, 0);
-                                    a = Apps.Where(i => i.Process == processo).Single();
+                                    lock (_lock)
+                                    {
+                                        a = Apps.Where(i => i.Process == processo).Single();
+                                    }
                                     a.Focus = true;
                                     a.TempoF.Start();
                                     ProcessoFocus = processo;
@@ -297,6 +299,24 @@ namespace Client
             }
         }
 
+        private void disegnaIcona(Applicazione a)
+        {
+            byte[] bitmaskB = Convert.FromBase64String(a.BitmaskBuffer);
+            IntPtr bitmask = Marshal.AllocHGlobal(bitmaskB.Length);
+            Marshal.Copy(bitmaskB, 0, bitmask, bitmaskB.Length);
+            if (a.ColorBuffer != null || a.ColorBuffer != "")
+            {
+                byte[] colorB = Convert.FromBase64String(a.ColorBuffer);
+                IntPtr color = Marshal.AllocHGlobal(colorB.Length);
+                Marshal.Copy(colorB, 0, color, colorB.Length);
+                a.Icona = System.Drawing.Image.FromHbitmap(bitmask, color);
+                Marshal.FreeHGlobal(color);
+            }
+            else
+                a.Icona = System.Drawing.Image.FromHbitmap(bitmask);
+            Marshal.FreeHGlobal(bitmask);
+        }
+
         /// <summary>
         /// Il metodo gestisce il riassunto grafico, aggiornando con
         /// un thread dedicato le informazioni nel datagrid in base
@@ -315,15 +335,23 @@ namespace Client
             {
                 if (ProcessoFocus != 0)
                 {
-                    Applicazione app = Apps.Where(i => i.Process == ProcessoFocus).SingleOrDefault();
+                    Applicazione app;
+                    List<Applicazione> senzaFocus = new List<Applicazione>();
+                    lock (_lock)
+                    { 
+                        app = Apps.Where(i => i.Process == ProcessoFocus).First();
+                        senzaFocus = Apps.Where(i => i.Process != ProcessoFocus).ToList();
+                    }
                     if (app != null)
                     {
                         app.Percentuale = (app.TempoF.Elapsed.TotalMilliseconds / TempoC.Elapsed.TotalMilliseconds) * 100;
                     }
+                    foreach(var a in senzaFocus)
+                    {
+                        a.Percentuale = (a.TempoF.Elapsed.TotalMilliseconds / TempoC.Elapsed.TotalMilliseconds) * 100;
+                    }
                 }
             }
-            //Alla fine svuota la tabella
-            Apps.Clear();
             return;
         }
 
@@ -356,7 +384,7 @@ namespace Client
         private void invioFocus()
         {
             Thread.CurrentThread.Name = "Invio";
-            if (Combinazione != null)
+            if (Combinazione != null && ProcessoFocus != 0)
             {
                 byte[] cod_proc = BitConverter.GetBytes(ProcessoFocus);
                 byte[] codifica = Encoding.ASCII.GetBytes(Combinazione);
@@ -366,9 +394,12 @@ namespace Client
                     Array.Reverse(cod_lung);
                 Action act = () => { testo.AppendText("Sto inviando la combinazione all'applicazione in focus.\n"); };
                 Dispatcher.Invoke(act);
-                Stream.Write(cod_lung, 0, 4);
-                Stream.Write(cod_proc, 0, 4);
-                Stream.Write(codifica, 0, lung);
+                if (Stream.CanWrite)
+                {
+                    Stream.Write(cod_lung, 0, 4);
+                    Stream.Write(cod_proc, 0, 4);
+                    Stream.Write(codifica, 0, lung);
+                }
             }
             return;
         }
