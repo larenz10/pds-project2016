@@ -4,18 +4,17 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Client"
-        mc:Ignorable="d"
-        Title="Client" Height="350" Width="700" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Auto" Background="White" Icon="icon.ico" ShowInTaskbar="False">
-    <Grid HorizontalAlignment="Right">
+        xmlns:med="clr-namespace:System.Windows.Media"
+        Title="Client" Height="350" Width="730" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Auto" Background="White" Icon="icon.ico">
+    <Grid>
         <Button x:Name="connetti" Content="Connetti" Margin="503,10,5,0" VerticalAlignment="Top" Height="23" Click="connetti_Click"/>
-        <TextBlock x:Name="textBlock" Margin="10,10,618,0" TextWrapping="Wrap" Text="Indirizzo" VerticalAlignment="Top" Height="23" FontSize="14"/>
-        <TextBox x:Name="indirizzo" Height="23" Margin="70,10,493,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="120" FontSize="14"/>
-        <TextBlock x:Name="textBlock1" Margin="210,10,437,0" TextWrapping="Wrap" Text="Porta" VerticalAlignment="Top" Width="36" Height="23" FontSize="14"/>
-        <TextBox x:Name="porta" Height="23" Margin="251,10,312,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="120" FontSize="14"/>
-        <TextBox x:Name="testo" Height="271" Margin="10,38,356,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" IsReadOnly="True"/>
+        <TextBlock x:Name="textBlock" Margin="10,10,644,0" TextWrapping="Wrap" Text="Indirizzo" VerticalAlignment="Top" Height="23" FontSize="14"/>
+        <TextBox x:Name="indirizzo" Height="23" Margin="67,10,536,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" FontSize="14"/>
+        <TextBlock x:Name="textBlock1" Margin="186,10,490,0" TextWrapping="Wrap" Text="Porta" VerticalAlignment="Top" Height="23" FontSize="14" RenderTransformOrigin="0.719,0.55"/>
+        <TextBox x:Name="porta" Height="23" Margin="225,10,375,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" FontSize="14"/>
+        <TextBox x:Name="testo" Height="271" Margin="10,38,375,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" IsReadOnly="True"/>
         <Button x:Name="invia" Content="Invia tasti all'app in focus" Margin="504,286,5,0" VerticalAlignment="Top" Height="23" Click="invia_Click"/>
-        <ListView x:Name="listView" Margin="336,38,5,33" Grid.Row="0" IsSynchronizedWithCurrentItem="True"
-                  ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+        <ListView x:Name="listView" Margin="352,38,5,33" Grid.Row="0" IsSynchronizedWithCurrentItem="True">
             <ListView.ItemContainerStyle>
                 <Style TargetType="ListViewItem">
                     <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
@@ -29,9 +28,15 @@
                     </Style.Triggers>
                 </Style>
             </ListView.ItemContainerStyle>
+            <ListView.Resources>
+                <med:ImageConverter x:Key="ImageConverter"/>
+                <DataTemplate x:Key="Template">
+                    <Image Source="{Binding Path=Icona, Converter={StaticResource ImageConverter}}" Width="32" Height="32"/>
+                </DataTemplate>
+            </ListView.Resources>
             <ListView.View>
                 <GridView x:Name="grdNames">
-                    <GridViewColumn Header="Icona" Width="35"/>
+                    <GridViewColumn Header="Icona" CellTemplate="{StaticResource Template}"/>
                     <GridViewColumn Header="Applicazione" DisplayMemberBinding="{Binding Name}" Width="160"/>
                     <GridViewColumn Width="70" Header="Processo">
                         <GridViewColumn.CellTemplate>

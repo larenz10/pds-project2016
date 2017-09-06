@@ -4,9 +4,17 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
+using System.Drawing.Imaging;
+using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Data;
+using System.Windows.Interop;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
 
 namespace Client
 {
@@ -17,6 +25,7 @@ namespace Client
     {
         private bool _focus;
         private double _percentuale;
+        private Icon _icon;
 
         public Applicazione()
         {
@@ -25,9 +34,8 @@ namespace Client
 
         public string Name { get; set; }                //Nome dell'applicazione
         public uint Process { get; set; }               //Identificativo del processo
-        public Bitmap Icona { get; set; }               //Definizione dell'icona
-        public string BitmaskBuffer { get; set; }       //Buffer di bit per la maschera
-        public string ColorBuffer { get; set; }         //Buffer di bit per i colori
+        public string IconStr { get; set; }             //Stringa dell'icona
+        public Icon Icona { get; set; }
         public bool Focus                               //L'app ha focus?
         {
             get

@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Data;
 using System.Diagnostics;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -23,6 +24,9 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using Newtonsoft.Json;
+using System.Windows.Interop;
+using System.Globalization;
+using System.Drawing.Imaging;
 
 namespace Client
 {
@@ -46,7 +50,7 @@ namespace Client
         public MainWindow()
         {
             InitializeComponent();
-            this.Show();
+            Show();
             Thread.CurrentThread.Name = "Main";
             SetUp();
         }
@@ -194,6 +198,7 @@ namespace Client
             Action action;
             uint processo;
             Applicazione a;
+            int nBytes;
             try
             {
                 byte[] readBuffer = new byte[Client.ReceiveBufferSize];
@@ -209,17 +214,26 @@ namespace Client
                             Stream.Read(readBuffer, 0, 1);
                             char c = BitConverter.ToChar(readBuffer, 0);
                             Array.Clear(readBuffer, 0, 1);
+                            nBytes = 0;
                             switch (c)
                             {
                                 //Inserimento nuova applicazione
                                 //Messaggio: len-'a'-JSON(App)
                                 case 'a':
-                                    Stream.Read(readBuffer, 0, len);
-                                    string res = Encoding.Default.GetString(readBuffer);
-                                    Array.Clear(readBuffer, 0, len);
-                                    a = JsonConvert.DeserializeObject<Applicazione>(res);
-                                    //if (a.BitmaskBuffer != null || a.BitmaskBuffer != "")
-                                    //    disegnaIcona(a);
+                                    string lettura = "";
+                                    string res = "";
+                                    do
+                                    {
+                                        int n = Stream.Read(readBuffer, 0, len);
+                                        len -= n;
+                                        nBytes += n;
+                                        res = Encoding.Default.GetString(readBuffer);
+                                        lettura += res;
+                                    } while (len > 0);
+                                    Array.Clear(readBuffer, 0, Client.ReceiveBufferSize);
+                                    a = JsonConvert.DeserializeObject<Applicazione>(lettura);
+                                    if (a.IconStr != null)
+                                        disegnaIcona(a);
                                     if (a.Focus)
                                     {
                                         if (ProcessoFocus != 0)
@@ -301,20 +315,11 @@ namespace Client
 
         private void disegnaIcona(Applicazione a)
         {
-            byte[] bitmaskB = Convert.FromBase64String(a.BitmaskBuffer);
-            IntPtr bitmask = Marshal.AllocHGlobal(bitmaskB.Length);
-            Marshal.Copy(bitmaskB, 0, bitmask, bitmaskB.Length);
-            if (a.ColorBuffer != null || a.ColorBuffer != "")
+            byte[] iconByte = Encoding.ASCII.GetBytes(a.IconStr);
+            using (MemoryStream ms = new MemoryStream(iconByte))
             {
-                byte[] colorB = Convert.FromBase64String(a.ColorBuffer);
-                IntPtr color = Marshal.AllocHGlobal(colorB.Length);
-                Marshal.Copy(colorB, 0, color, colorB.Length);
-                a.Icona = System.Drawing.Image.FromHbitmap(bitmask, color);
-                Marshal.FreeHGlobal(color);
+                a.Icona = new Icon(ms);
             }
-            else
-                a.Icona = System.Drawing.Image.FromHbitmap(bitmask);
-            Marshal.FreeHGlobal(bitmask);
         }
 
         /// <summary>
@@ -342,11 +347,8 @@ namespace Client
                         app = Apps.Where(i => i.Process == ProcessoFocus).First();
                         senzaFocus = Apps.Where(i => i.Process != ProcessoFocus).ToList();
                     }
-                    if (app != null)
-                    {
-                        app.Percentuale = (app.TempoF.Elapsed.TotalMilliseconds / TempoC.Elapsed.TotalMilliseconds) * 100;
-                    }
-                    foreach(var a in senzaFocus)
+
+                    foreach(var a in Apps)
                     {
                         a.Percentuale = (a.TempoF.Elapsed.TotalMilliseconds / TempoC.Elapsed.TotalMilliseconds) * 100;
                     }
@@ -414,5 +416,39 @@ namespace Client
             testo.AppendText("Combinazione: " + Combinazione + ".\n");
         }
 
+    }
+}
+
+namespace System.Windows.Media
+{
+    /// <summary>
+    /// One-way converter from System.Drawing.Image to System.Windows.Media.ImageSource
+    /// </summary>
+    [ValueConversion(typeof(System.Drawing.Icon), typeof(System.Windows.Media.ImageSource))]
+    public class ImageConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType,
+            object parameter, CultureInfo culture)
+        {
+            // empty images are empty...
+            if (value == null) { return null; }
+
+            var image = (System.Drawing.Icon)value;
+            // Winforms Image we want to get the WPF Image from...
+            Bitmap bitmap = bitmap = image.ToBitmap();
+            bitmap.MakeTransparent();
+            IntPtr hBitmap = bitmap.GetHbitmap();
+
+            ImageSource wpfBitmap = Interop.Imaging.CreateBitmapSourceFromHBitmap(
+                hBitmap, IntPtr.Zero, Int32Rect.Empty,
+                BitmapSizeOptions.FromEmptyOptions());
+            return wpfBitmap;
+        }
+
+        public object ConvertBack(object value, Type targetType,
+            object parameter, CultureInfo culture)
+        {
+            return null;
+        }
     }
 }
