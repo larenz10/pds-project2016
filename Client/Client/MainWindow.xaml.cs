@@ -27,6 +27,7 @@ using Newtonsoft.Json;
 using System.Windows.Interop;
 using System.Globalization;
 using System.Drawing.Imaging;
+using System.Net.NetworkInformation;
 
 namespace Client
 {
@@ -114,7 +115,7 @@ namespace Client
                         Riassunto.Start();
                         indirizzo.IsReadOnly = true;
                         porta.IsReadOnly = true;
-                        //controllaConnessione();
+                        //controllaConnessione(ind);
                     }
                     else
                     {
@@ -164,13 +165,17 @@ namespace Client
         /// In caso di disconnessione brutale da parte del server,
         /// avvia il processo di disconnessione.
         /// </summary>
-        private void controllaConnessione()
+        private void controllaConnessione(IPAddress ip)
         {
-            while (Client.Connected) ;
+            Ping ping = new Ping();
+            PingReply reply;
+            do
+            {
+                reply = ping.Send(ip, 1000);
+            } while (reply.Status == IPStatus.Success);
             testo.AppendText("Il server si è disconnesso.\n");
             TempoC.Stop();
             Connesso = false;
-            Ascolta.Abort();
             Ascolta.Join();
             Riassunto.Join();
             Client.Close();
@@ -279,8 +284,11 @@ namespace Client
                                 //Focus cambiato
                                 //Messaggio: len-'f'-Codice processo App
                                 case 'f':
-                                    Apps.Where(i => i.Process == ProcessoFocus).Single().Focus = false;
-                                    Apps.Where(i => i.Process == ProcessoFocus).Single().TempoF.Stop();
+                                    if (ProcessoFocus != 0)
+                                    {
+                                        Apps.Where(i => i.Process == ProcessoFocus).Single().Focus = false;
+                                        Apps.Where(i => i.Process == ProcessoFocus).Single().TempoF.Stop();
+                                    }
                                     Stream.Read(readBuffer, 0, len);
                                     processo = BitConverter.ToUInt32(readBuffer, 0);
                                     lock (_lock)
@@ -340,15 +348,7 @@ namespace Client
             {
                 if (ProcessoFocus != 0)
                 {
-                    Applicazione app;
-                    List<Applicazione> senzaFocus = new List<Applicazione>();
-                    lock (_lock)
-                    { 
-                        app = Apps.Where(i => i.Process == ProcessoFocus).First();
-                        senzaFocus = Apps.Where(i => i.Process != ProcessoFocus).ToList();
-                    }
-
-                    foreach(var a in Apps)
+                    foreach(var a in Apps.ToList())
                     {
                         a.Percentuale = (a.TempoF.Elapsed.TotalMilliseconds / TempoC.Elapsed.TotalMilliseconds) * 100;
                     }
@@ -374,6 +374,7 @@ namespace Client
             Window1 w = new Window1();
             w.RaiseCustomEvent += new EventHandler<CustomEventArgs>(w_RaiseCustomEvent);
             w.ShowDialog();
+            //invioFocus();
             Thread inviaTasti = new Thread(invioFocus);
             inviaTasti.IsBackground = true;
             inviaTasti.Start();
@@ -392,15 +393,20 @@ namespace Client
                 byte[] codifica = Encoding.ASCII.GetBytes(Combinazione);
                 int lung = codifica.Length;
                 byte[] cod_lung = BitConverter.GetBytes(lung);
+                byte[] buffer = new byte[cod_lung.Length + cod_proc.Length + codifica.Length];
                 if (BitConverter.IsLittleEndian)
+                {
                     Array.Reverse(cod_lung);
+                    uint proc = BitConverter.ToUInt32(cod_proc, 0);
+                }
                 Action act = () => { testo.AppendText("Sto inviando la combinazione all'applicazione in focus.\n"); };
                 Dispatcher.Invoke(act);
+                Buffer.BlockCopy(cod_lung, 0, buffer, 0, cod_lung.Length);
+                Buffer.BlockCopy(cod_proc, 0, buffer, cod_lung.Length, cod_proc.Length);
+                Buffer.BlockCopy(codifica, 0, buffer, cod_lung.Length + cod_proc.Length, codifica.Length);
                 if (Stream.CanWrite)
                 {
-                    Stream.Write(cod_lung, 0, 4);
-                    Stream.Write(cod_proc, 0, 4);
-                    Stream.Write(codifica, 0, lung);
+                    Stream.Write(buffer, 0, buffer.Length);
                 }
             }
             return;

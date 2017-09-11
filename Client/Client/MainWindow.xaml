@@ -12,7 +12,7 @@
         <TextBox x:Name="indirizzo" Height="23" Margin="67,10,536,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" FontSize="14"/>
         <TextBlock x:Name="textBlock1" Margin="186,10,490,0" TextWrapping="Wrap" Text="Porta" VerticalAlignment="Top" Height="23" FontSize="14" RenderTransformOrigin="0.719,0.55"/>
         <TextBox x:Name="porta" Height="23" Margin="225,10,375,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" FontSize="14"/>
-        <TextBox x:Name="testo" Height="271" Margin="10,38,375,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" IsReadOnly="True"/>
+        <TextBox x:Name="testo" Height="271" Margin="10,38,375,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" IsReadOnly="True" VerticalScrollBarVisibility="Auto"/>
         <Button x:Name="invia" Content="Invia tasti all'app in focus" Margin="504,286,5,0" VerticalAlignment="Top" Height="23" Click="invia_Click"/>
         <ListView x:Name="listView" Margin="352,38,5,33" Grid.Row="0" IsSynchronizedWithCurrentItem="True">
             <ListView.ItemContainerStyle>
