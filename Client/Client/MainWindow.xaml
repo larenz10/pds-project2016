@@ -31,13 +31,13 @@
             <ListView.Resources>
                 <med:ImageConverter x:Key="ImageConverter"/>
                 <DataTemplate x:Key="Template">
-                    <Image Source="{Binding Path=Icona, Converter={StaticResource ImageConverter}}" Width="32" Height="32"/>
+                    <Image Source="{Binding Path=Icona, Converter={StaticResource ImageConverter}}" Width="16" Height="16"/>
                 </DataTemplate>
             </ListView.Resources>
             <ListView.View>
                 <GridView x:Name="grdNames">
                     <GridViewColumn Header="Icona" CellTemplate="{StaticResource Template}"/>
-                    <GridViewColumn Header="Applicazione" DisplayMemberBinding="{Binding Name}" Width="160"/>
+                    <GridViewColumn Header="Applicazione" DisplayMemberBinding="{Binding Name}" Width="174" />
                     <GridViewColumn Width="70" Header="Processo">
                         <GridViewColumn.CellTemplate>
                             <DataTemplate>

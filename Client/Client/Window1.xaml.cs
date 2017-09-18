@@ -12,6 +12,8 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 
+
+
 namespace Client
 {
     /// <summary>
@@ -53,7 +55,36 @@ namespace Client
         /// </summary>
         private void conferma_Click(object sender, RoutedEventArgs e)
         {
-            RaiseCustomEvent(this, new CustomEventArgs(combinazione.Text));
+            string[] elem = combinazione.Text.Split(' ');
+            string comb = "";
+            foreach (var key in elem)
+            {
+                if (key.Equals("CTRL"))
+                    comb += '^';
+                else if (key.Equals("ALT"))
+                    comb += '%';
+                else if (key.Equals("SHIFT"))
+                    comb += '+';
+                else if (key.Equals("Backspace"))
+                    comb += "{BS}";
+                else if (key.Equals("Delete"))
+                    comb += "{DEL}";
+                else if (key.Equals("Esc"))
+                    comb += "{ESC}";
+                else if (key.Equals("Ins"))
+                    comb += "{INS}";
+                else if (key.Equals("Invio"))
+                    comb += "~";
+                else if (key.Equals("Fine"))
+                    comb += "{END}";
+                else if (key.Equals("Tab"))
+                    comb += "{TAB}";
+                else if (key.Equals("Spazio"))
+                    comb += "{SPAZIO}";
+                else
+                    comb += key.ToLower();
+            }
+            RaiseCustomEvent(this, new CustomEventArgs(comb));
             Close();
         }
 

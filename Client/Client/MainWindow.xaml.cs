@@ -42,7 +42,7 @@ namespace Client
         private Thread Ascolta { get; set; }                            //Thread in ascolto sul server
         private Thread Riassunto { get; set; }                          //Thread che gestisce il riassunto
         private ObservableCollection<Applicazione> Apps { get; set; }   //Collezione che contiene le applicazioni del server
-        private string Combinazione { get; set; }                       //Combinazione da inviare
+        private byte[] Combinazione { get; set; }                       //Combinazione da inviare
         private uint ProcessoFocus { get; set; }                        //Codice del processo in focus
         private Stopwatch TempoC { get; set; }                          //Cronometro di connessione al server
         readonly object key = new object();
@@ -99,7 +99,7 @@ namespace Client
                     int port = int.Parse(porta.Text);
                     Client = new TcpClient();
                     var result = Client.BeginConnect(ind, port, null, null);
-                    var success = result.AsyncWaitHandle.WaitOne(TimeSpan.FromSeconds(5));
+                    var success = result.AsyncWaitHandle.WaitOne(TimeSpan.FromSeconds(10));
                     if (success)
                     {
                         TempoC.Restart();
@@ -229,7 +229,7 @@ namespace Client
                                     string res = "";
                                     do
                                     {
-                                        int n = Stream.Read(readBuffer, 0, len);
+                                        int n = Stream.Read(readBuffer, nBytes, len);
                                         len -= n;
                                         nBytes += n;
                                         res = Encoding.Default.GetString(readBuffer);
@@ -237,8 +237,21 @@ namespace Client
                                     } while (len > 0);
                                     Array.Clear(readBuffer, 0, Client.ReceiveBufferSize);
                                     a = JsonConvert.DeserializeObject<Applicazione>(lettura);
-                                    if (a.IconStr != null)
-                                        disegnaIcona(a);
+                                    if (a.IconLength != 0)
+                                    {
+                                        if (Stream.DataAvailable)
+                                        {
+                                            nBytes = 0;
+                                            byte[] iconByte = new byte[a.IconLength];
+                                            do
+                                            {
+                                                int n = Stream.Read(iconByte, nBytes, a.IconLength);
+                                                len -= n;
+                                                nBytes += n;
+                                            } while (len > 0);
+                                            ottieniIcona(a, iconByte);
+                                        }
+                                    }
                                     if (a.Focus)
                                     {
                                         if (ProcessoFocus != 0)
@@ -321,9 +334,8 @@ namespace Client
             }
         }
 
-        private void disegnaIcona(Applicazione a)
+        private void ottieniIcona(Applicazione a, byte[] iconByte)
         {
-            byte[] iconByte = Encoding.ASCII.GetBytes(a.IconStr);
             using (MemoryStream ms = new MemoryStream(iconByte))
             {
                 a.Icona = new Icon(ms);
@@ -364,7 +376,7 @@ namespace Client
         /// la funzione invioFocus, che gestisce l'invio al 
         /// server della combinazione.
         /// </summary>
-        private void invia_Click(object sender, RoutedEventArgs e)
+        /*private void invia_Click(object sender, RoutedEventArgs e)
         {
             if (!Connesso)
             {
@@ -375,6 +387,44 @@ namespace Client
             w.RaiseCustomEvent += new EventHandler<CustomEventArgs>(w_RaiseCustomEvent);
             w.ShowDialog();
             //invioFocus();
+            Thread inviaTasti = new Thread(invioFocus);
+            inviaTasti.IsBackground = true;
+            inviaTasti.Start();
+        }*/
+
+        private void invia_Click(object sender, RoutedEventArgs e)
+        {
+            if (!Connesso)
+            {
+                testo.AppendText("Devi essere connesso per poter inviare tasti all'applicazione in focus!\n");
+                return;
+            }
+            ConsoleKeyInfo cki;
+            ConsoleManager.Show();
+            Console.TreatControlCAsInput = true;
+            Console.Write("Digita i tasti che vuoi inviare all'applicazione in focus...\n");
+            Combinazione = new Byte[4];
+            cki = Console.ReadKey();
+            testo.AppendText("--- Hai premuto ");
+            if ((cki.Modifiers & ConsoleModifiers.Alt) != 0)
+            {
+                testo.AppendText("ALT+");
+                Combinazione[1] = 4;
+            }
+            if ((cki.Modifiers & ConsoleModifiers.Shift) != 0)
+            {
+                testo.AppendText("SHIFT+");
+                Combinazione[2] = 1;
+            }
+            if ((cki.Modifiers & ConsoleModifiers.Control) != 0)
+            {
+                testo.AppendText("CTRL+");
+                Combinazione[3] = 2;
+            }
+            testo.AppendText(cki.Key.ToString() + "\n");
+            Combinazione[0] = Convert.ToByte(cki.Key);
+            ConsoleManager.Hide();
+            testo.AppendText("Sto inviando la combinazione!");
             Thread inviaTasti = new Thread(invioFocus);
             inviaTasti.IsBackground = true;
             inviaTasti.Start();
@@ -390,10 +440,9 @@ namespace Client
             if (Combinazione != null && ProcessoFocus != 0)
             {
                 byte[] cod_proc = BitConverter.GetBytes(ProcessoFocus);
-                byte[] codifica = Encoding.ASCII.GetBytes(Combinazione);
-                int lung = codifica.Length;
+                int lung = Combinazione.Length;
                 byte[] cod_lung = BitConverter.GetBytes(lung);
-                byte[] buffer = new byte[cod_lung.Length + cod_proc.Length + codifica.Length];
+                byte[] buffer = new byte[cod_lung.Length + cod_proc.Length + Combinazione.Length];
                 if (BitConverter.IsLittleEndian)
                 {
                     Array.Reverse(cod_lung);
@@ -403,7 +452,7 @@ namespace Client
                 Dispatcher.Invoke(act);
                 Buffer.BlockCopy(cod_lung, 0, buffer, 0, cod_lung.Length);
                 Buffer.BlockCopy(cod_proc, 0, buffer, cod_lung.Length, cod_proc.Length);
-                Buffer.BlockCopy(codifica, 0, buffer, cod_lung.Length + cod_proc.Length, codifica.Length);
+                Buffer.BlockCopy(Combinazione, 0, buffer, cod_lung.Length + cod_proc.Length, Combinazione.Length);
                 if (Stream.CanWrite)
                 {
                     Stream.Write(buffer, 0, buffer.Length);
@@ -416,11 +465,11 @@ namespace Client
         /// <summary>
         /// Evento che si occupa di prendere la combinazione codificata da Window1.
         /// </summary>
-        void w_RaiseCustomEvent(object sender, CustomEventArgs e)
+ /*       void w_RaiseCustomEvent(object sender, CustomEventArgs e)
         {
             Combinazione = e.Message;
             testo.AppendText("Combinazione: " + Combinazione + ".\n");
-        }
+        }*/
 
     }
 }
@@ -441,13 +490,13 @@ namespace System.Windows.Media
 
             var image = (System.Drawing.Icon)value;
             // Winforms Image we want to get the WPF Image from...
-            Bitmap bitmap = bitmap = image.ToBitmap();
-            bitmap.MakeTransparent();
+            Bitmap bitmap = image.ToBitmap();
             IntPtr hBitmap = bitmap.GetHbitmap();
 
             ImageSource wpfBitmap = Interop.Imaging.CreateBitmapSourceFromHBitmap(
-                hBitmap, IntPtr.Zero, Int32Rect.Empty,
-                BitmapSizeOptions.FromEmptyOptions());
+                                    hBitmap, IntPtr.Zero, Int32Rect.Empty,
+                                    BitmapSizeOptions.FromEmptyOptions());
+
             return wpfBitmap;
         }
 

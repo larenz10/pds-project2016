@@ -25,7 +25,6 @@ namespace Client
     {
         private bool _focus;
         private double _percentuale;
-        private Icon _icon;
 
         public Applicazione()
         {
@@ -34,7 +33,7 @@ namespace Client
 
         public string Name { get; set; }                //Nome dell'applicazione
         public uint Process { get; set; }               //Identificativo del processo
-        public string IconStr { get; set; }             //Stringa dell'icona
+        public int IconLength { get; set; }             //Lunghezza del vettore di byte dell'icona
         public Icon Icona { get; set; }
         public bool Focus                               //L'app ha focus?
         {
