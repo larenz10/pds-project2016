@@ -10,19 +10,30 @@ using System.Threading.Tasks;
 
 namespace Client
 {
+
     [SuppressUnmanagedCodeSecurity]
     public static class ConsoleManager
     {
+        const uint ATTACH_PARENT_PROCESS = 0x0ffffffff;
+        const int ERROR_ACCESS_DENIED = 5;
+        const int SW_HIDE = 0;
+        const int SW_SHOW = 5;
         private const string Kernel32_DllName = "kernel32.dll";
 
         [DllImport(Kernel32_DllName)]
         private static extern bool AllocConsole();
+
+        [DllImport(Kernel32_DllName, SetLastError = true)]
+        static extern bool AttachConsole(uint dwProcessId);
 
         [DllImport(Kernel32_DllName)]
         private static extern bool FreeConsole();
 
         [DllImport(Kernel32_DllName)]
         private static extern IntPtr GetConsoleWindow();
+
+        [DllImport("user32.dll")]
+        static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
 
         [DllImport(Kernel32_DllName)]
         private static extern int GetConsoleOutputCP();
@@ -32,16 +43,35 @@ namespace Client
             get { return GetConsoleWindow() != IntPtr.Zero; }
         }
 
+        public static bool CtrlC = false;
+
+        public static void AllocaConsole()
+        {
+            if(!AttachConsole(ATTACH_PARENT_PROCESS))
+            {
+                //A console is not allocated: we need to make one
+                AllocConsole();
+                Console.TreatControlCAsInput = true;
+            }
+        }
+
+        public static void LiberaConsole()
+        {
+            if (HasConsole)
+                FreeConsole();
+        }
+
+
         /// <summary>
         /// Creates a new console instance if the process is not attached to a console already.
         /// </summary>
         public static void Show()
         {
             //#if DEBUG
-            if (!HasConsole)
+            if (HasConsole)
             {
-                AllocConsole();
-                InvalidateOutAndError();
+                var handle = GetConsoleWindow();
+                ShowWindow(handle, SW_SHOW);
             }
             //#endif
         }
@@ -54,8 +84,8 @@ namespace Client
             //#if DEBUG
             if (HasConsole)
             {
-                SetOutAndErrorNull();
-                FreeConsole();
+                var handle = GetConsoleWindow();
+                ShowWindow(handle, SW_HIDE);
             }
             //#endif
         }

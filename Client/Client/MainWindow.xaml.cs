@@ -61,7 +61,7 @@ namespace Client
             Client = null;
             Stream = null;
             Connesso = false;
-            Combinazione = null;
+            Combinazione = new Byte[4];
             ProcessoFocus = 0;
             Apps = new ObservableCollection<Applicazione>();
             BindingOperations.EnableCollectionSynchronization(Apps, _lock);
@@ -190,7 +190,8 @@ namespace Client
         /// All'apertura istanzia il buffer di lettura, poi se lo stream
         /// è disponibile, ne legge un byte che conterrà un codice identificativo
         /// dell'operazione:
-        /// a -> nuova applicazione
+        /// n -> nuova applicazione
+        /// a -> l'applicazione cambia nome e/o icona
         /// f -> focus cambiato
         /// r -> applicazione chiusa
         /// In tutti e tre i casi, legge la lunghezza del messaggio inviato
@@ -224,7 +225,7 @@ namespace Client
                             {
                                 //Inserimento nuova applicazione
                                 //Messaggio: len-'a'-JSON(App)
-                                case 'a':
+                                case 'n':
                                     string lettura = "";
                                     string res = "";
                                     do
@@ -235,7 +236,7 @@ namespace Client
                                         res = Encoding.Default.GetString(readBuffer);
                                         lettura += res;
                                     } while (len > 0);
-                                    Array.Clear(readBuffer, 0, Client.ReceiveBufferSize);
+                                    Array.Clear(readBuffer, 0, nBytes);
                                     a = JsonConvert.DeserializeObject<Applicazione>(lettura);
                                     if (a.IconLength != 0)
                                     {
@@ -246,10 +247,11 @@ namespace Client
                                             do
                                             {
                                                 int n = Stream.Read(iconByte, nBytes, a.IconLength);
-                                                len -= n;
+                                                a.IconLength -= n;
                                                 nBytes += n;
-                                            } while (len > 0);
+                                            } while (a.IconLength > 0);
                                             ottieniIcona(a, iconByte);
+                                            Array.Clear(iconByte, 0, nBytes);
                                         }
                                     }
                                     if (a.Focus)
@@ -279,6 +281,46 @@ namespace Client
                                             Monitor.Pulse(key);
                                     }
                                     break;
+                                //Aggiornamento di un'applicazione
+                                //Messaggio: len-'a'-JSON(app)
+                                case 'a':
+                                    lettura = "";
+                                    res = "";
+                                    do
+                                    {
+                                        int n = Stream.Read(readBuffer, nBytes, len);
+                                        len -= n;
+                                        nBytes += n;
+                                        res = Encoding.Default.GetString(readBuffer);
+                                        lettura += res;
+                                    } while (len > 0);
+                                    Array.Clear(readBuffer, 0, nBytes);
+                                    Applicazione app = JsonConvert.DeserializeObject<Applicazione>(lettura);
+                                    if (app.IconLength != 0)
+                                    {
+                                        if (Stream.DataAvailable)
+                                        {
+                                            nBytes = 0;
+                                            byte[] iconByte = new byte[app.IconLength];
+                                            do
+                                            {
+                                                int n = Stream.Read(iconByte, nBytes, app.IconLength);
+                                                app.IconLength -= n;
+                                                nBytes += n;
+                                            } while (app.IconLength > 0);
+                                            ottieniIcona(app, iconByte);
+                                            Array.Clear(iconByte, 0, nBytes);
+                                        }
+                                    }
+                                    lock (_lock)
+                                    {
+                                        a = Apps.Where(i => i.Process == app.Process).Single();
+                                        a.Name = app.Name;
+                                        a.Icona = app.Icona;
+                                    }
+                                    action = () => testo.AppendText("Applicazione aggiornata: " + a.Name + ".\n");
+                                    Dispatcher.Invoke(action);
+                                    break;
                                 //Rimozione di un'applicazione
                                 //Messaggio: len-'r'-Codice processo App
                                 case 'r':
@@ -293,6 +335,7 @@ namespace Client
                                     }
                                     action = () => testo.AppendText("Applicazione rimossa: " + a.Name + ".\n");
                                     Dispatcher.Invoke(action);
+                                    Array.Clear(readBuffer, 0, len);
                                     break;
                                 //Focus cambiato
                                 //Messaggio: len-'f'-Codice processo App
@@ -313,6 +356,7 @@ namespace Client
                                     ProcessoFocus = processo;
                                     action = () => testo.AppendText("Nuovo focus: " + a.Name + ".\n");
                                     Dispatcher.Invoke(action);
+                                    Array.Clear(readBuffer, 0, len);
                                     break;
                                 default:
                                     break;
@@ -360,9 +404,12 @@ namespace Client
             {
                 if (ProcessoFocus != 0)
                 {
-                    foreach(var a in Apps.ToList())
+                    lock (_lock)
                     {
-                        a.Percentuale = (a.TempoF.Elapsed.TotalMilliseconds / TempoC.Elapsed.TotalMilliseconds) * 100;
+                        foreach (var a in Apps.ToList())
+                        {
+                            a.Percentuale = (a.TempoF.Elapsed.TotalMilliseconds / TempoC.Elapsed.TotalMilliseconds) * 100;
+                        }
                     }
                 }
             }
@@ -399,32 +446,6 @@ namespace Client
                 testo.AppendText("Devi essere connesso per poter inviare tasti all'applicazione in focus!\n");
                 return;
             }
-            ConsoleKeyInfo cki;
-            ConsoleManager.Show();
-            Console.TreatControlCAsInput = true;
-            Console.Write("Digita i tasti che vuoi inviare all'applicazione in focus...\n");
-            Combinazione = new Byte[4];
-            cki = Console.ReadKey();
-            testo.AppendText("--- Hai premuto ");
-            if ((cki.Modifiers & ConsoleModifiers.Alt) != 0)
-            {
-                testo.AppendText("ALT+");
-                Combinazione[1] = 4;
-            }
-            if ((cki.Modifiers & ConsoleModifiers.Shift) != 0)
-            {
-                testo.AppendText("SHIFT+");
-                Combinazione[2] = 1;
-            }
-            if ((cki.Modifiers & ConsoleModifiers.Control) != 0)
-            {
-                testo.AppendText("CTRL+");
-                Combinazione[3] = 2;
-            }
-            testo.AppendText(cki.Key.ToString() + "\n");
-            Combinazione[0] = Convert.ToByte(cki.Key);
-            ConsoleManager.Hide();
-            testo.AppendText("Sto inviando la combinazione!");
             Thread inviaTasti = new Thread(invioFocus);
             inviaTasti.IsBackground = true;
             inviaTasti.Start();
@@ -437,6 +458,39 @@ namespace Client
         private void invioFocus()
         {
             Thread.CurrentThread.Name = "Invio";
+            ConsoleKeyInfo cki;
+            Action action;
+            ConsoleManager.AllocaConsole();
+            ConsoleManager.Show();
+            Console.Write("Digita i tasti che vuoi inviare all'applicazione in focus...\n");
+            Array.Clear(Combinazione, 0, Combinazione.Length);
+            cki = Console.ReadKey();
+            action = () => testo.AppendText("--- Hai premuto ");
+            Dispatcher.Invoke(action);
+            if ((cki.Modifiers & ConsoleModifiers.Alt) != 0)
+            {
+                action = () => testo.AppendText("ALT+");
+                Dispatcher.Invoke(action);
+                Combinazione[1] = 0x12;
+            }
+            if ((cki.Modifiers & ConsoleModifiers.Shift) != 0)
+            {
+                action = () => testo.AppendText("SHIFT+");
+                Dispatcher.Invoke(action);
+                Combinazione[2] = 0x10;
+            }
+            if ((cki.Modifiers & ConsoleModifiers.Control) != 0)
+            {
+                action = () => testo.AppendText("CTRL+");
+                Dispatcher.Invoke(action);
+                Combinazione[3] = 0x11;
+            }
+            action = () => testo.AppendText(cki.Key.ToString() + "\n");
+            Dispatcher.Invoke(action);
+            Combinazione[0] = Convert.ToByte(cki.Key);
+            ConsoleManager.Hide();
+            action = () => testo.AppendText("Sto inviando la combinazione!\n");
+            Dispatcher.Invoke(action);
             if (Combinazione != null && ProcessoFocus != 0)
             {
                 byte[] cod_proc = BitConverter.GetBytes(ProcessoFocus);
@@ -448,8 +502,6 @@ namespace Client
                     Array.Reverse(cod_lung);
                     uint proc = BitConverter.ToUInt32(cod_proc, 0);
                 }
-                Action act = () => { testo.AppendText("Sto inviando la combinazione all'applicazione in focus.\n"); };
-                Dispatcher.Invoke(act);
                 Buffer.BlockCopy(cod_lung, 0, buffer, 0, cod_lung.Length);
                 Buffer.BlockCopy(cod_proc, 0, buffer, cod_lung.Length, cod_proc.Length);
                 Buffer.BlockCopy(Combinazione, 0, buffer, cod_lung.Length + cod_proc.Length, Combinazione.Length);

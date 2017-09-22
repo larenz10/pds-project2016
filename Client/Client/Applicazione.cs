@@ -23,6 +23,8 @@ namespace Client
     /// </summary>
     public class Applicazione : INotifyPropertyChanged
     {
+        private string _name;
+        private Icon _icona;
         private bool _focus;
         private double _percentuale;
 
@@ -31,10 +33,36 @@ namespace Client
             TempoF = new Stopwatch();
         }
 
-        public string Name { get; set; }                //Nome dell'applicazione
+        public string Name {
+            get
+            {
+                return _name;
+            }
+            set
+            {
+                if (_name != value)
+                {
+                    _name = value;
+                    OnPropertyChanged("Name");
+                }
+            }
+        }                
         public uint Process { get; set; }               //Identificativo del processo
         public int IconLength { get; set; }             //Lunghezza del vettore di byte dell'icona
-        public Icon Icona { get; set; }
+        public Icon Icona {
+            get
+            {
+                return _icona;
+            }
+            set
+            {
+                if (_icona != value)
+                {
+                    _icona = value;
+                    OnPropertyChanged("Icona");
+                }
+            }
+        }
         public bool Focus                               //L'app ha focus?
         {
             get
