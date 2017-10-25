@@ -41,13 +41,12 @@ namespace Client
         private bool Connesso { get; set; }                             //Variabile booleana che identifica la connessione attiva
         private Thread Ascolta { get; set; }                            //Thread in ascolto sul server
         private Thread Riassunto { get; set; }                          //Thread che gestisce il riassunto
-        private Thread Verifica { get; set; }
         private ObservableCollection<Applicazione> Apps { get; set; }   //Collezione che contiene le applicazioni del server
         private byte[] Combinazione { get; set; }                       //Combinazione da inviare
         private uint ProcessoFocus { get; set; }                        //Codice del processo in focus
         private Stopwatch TempoC { get; set; }                          //Cronometro di connessione al server
         readonly object key = new object();
-        readonly object _lock = new object();
+        private object _lock = new object();
 
         public MainWindow()
         {
@@ -59,8 +58,9 @@ namespace Client
 
         private void SetUp()
         {
-            Client = new TcpClient();
+            Client = null;
             Stream = null;
+         //   Stream.ReadTimeout = 100;
             Connesso = false;
             Combinazione = new Byte[4];
             ProcessoFocus = 0;
@@ -116,9 +116,7 @@ namespace Client
                         Riassunto.Start();
                         indirizzo.IsReadOnly = true;
                         porta.IsReadOnly = true;
-                        Verifica = new Thread(controllaConnessione);
-                        Verifica.IsBackground = true;
-                        Verifica.Start();
+                        //controllaConnessione(ind);
                     }
                     else
                     {
@@ -148,18 +146,10 @@ namespace Client
             }
             else
             {
-                disconnetti();
-            }
-        }
-
-        private void disconnetti()
-        {
-            if (Connesso)
-            {
                 TempoC.Stop();
                 Connesso = false;
-                Ascolta.Join(1000);
-                Riassunto.Join(1000);
+                Ascolta.Join();
+                Riassunto.Join();
                 Client.Close();
                 ProcessoFocus = 0;
                 Client = null;
@@ -170,44 +160,30 @@ namespace Client
             }
         }
 
-        private void controllaConnessione()
+        /// <summary>
+        /// Il metodo permette al thread principale di controllare
+        /// se il socket ha ancora una connessione attiva al server.
+        /// In caso di disconnessione brutale da parte del server,
+        /// avvia il processo di disconnessione.
+        /// </summary>
+        private void controllaConnessione(IPAddress ip)
         {
-            Action action;
-            while (Client.Client.Connected)
+            Ping ping = new Ping();
+            PingReply reply;
+            do
             {
-                bool blockingState = Client.Client.Blocking;
-                try
-                {
-                    byte[] tmp = new byte[1];
-                    Client.Client.Blocking = false;
-                    if (Connesso)
-                        Client.Client.Send(tmp, 0, 0);
-                }
-                catch (SocketException e)
-                {
-                    if (e.NativeErrorCode.Equals(10035))
-                    {
-                        action = () => testo.AppendText("Il server è connesso, ma la Send blocca.");
-                        Dispatcher.Invoke(action);
-                    }
-                    else if (e.NativeErrorCode.Equals(10058))
-                    {
-                        return;
-                    }
-                    else
-                    {
-                        action = () => testo.AppendText("Server disconnesso: codice di errore " + e.NativeErrorCode);
-                        Dispatcher.Invoke(action);
-                        action = () => disconnetti();
-                        Dispatcher.Invoke(action);
-                        return;
-                    }
-                }
-                finally
-                {
-                    //Client.Client.Blocking = blockingState;
-                }
-            }
+                reply = ping.Send(ip, 1000);
+            } while (reply.Status == IPStatus.Success);
+            testo.AppendText("Il server si è disconnesso.\n");
+            TempoC.Stop();
+            Connesso = false;
+            Ascolta.Join();
+            Riassunto.Join();
+            Client.Close();
+            Client = null;
+            connetti.Content = "Connetti";
+            indirizzo.IsReadOnly = false;
+            porta.IsReadOnly = false;
         }
 
         /// <summary>
@@ -230,151 +206,197 @@ namespace Client
             Applicazione a;
             bool pronto = false;
             byte[] readBuffer = new byte[Client.ReceiveBufferSize];
-            int len;
+            int nBytes, len, n;
             uint processo;
 
             try
             {
                 while (Connesso)
                 {
-                    leggiStream(Stream, readBuffer, 4);
-                    len = BitConverter.ToInt32(readBuffer, 0);
-                    Array.Clear(readBuffer, 0, 4);
-                    leggiStream(Stream, readBuffer, 1);
-                    char c = BitConverter.ToChar(readBuffer, 0);
-                    Array.Clear(readBuffer, 0, 1);
-                    switch (c)
+                    if (Stream.CanRead)
                     {
-                    //Inserimento nuova applicazione
-                    //Messaggio: len-'a'-JSON(App)
-                    case 'n':
-                        leggiStream(Stream, readBuffer, len);
-                        string lettura = Encoding.Default.GetString(readBuffer);
-                        Array.Clear(readBuffer, 0, len);
-                        a = JsonConvert.DeserializeObject<Applicazione>(lettura);
-                        if (a.IconLength != 0)
-                        {
-                            byte[] iconByte = new byte[a.IconLength];
-                            leggiStream(Stream, iconByte, a.IconLength);
-                            ottieniIcona(a, iconByte);
-                            Array.Clear(iconByte, 0, a.IconLength);
-                        }
-                        if (a.Focus)
-                        {
-                            if (ProcessoFocus != 0)
+                        if (Stream.DataAvailable) {
+                            Stream.ReadTimeout = 3000;
+                            n = Stream.Read(readBuffer, 0, 4);
+                            if (n == 0) //No data available
+                                break;
+                            len = BitConverter.ToInt32(readBuffer, 0);
+                            Array.Clear(readBuffer, 0, 4);
+                            Stream.Read(readBuffer, 0, 1);
+                            char c = BitConverter.ToChar(readBuffer, 0);
+                            Array.Clear(readBuffer, 0, 1);
+                            switch (c)
                             {
-                                lock (_lock)
-                                {
-                                    Apps.Where(i => i.Process == ProcessoFocus).Single().Focus = false;
-                                    Apps.Where(i => i.Process == ProcessoFocus).Single().TempoF.Stop();
-                                }
-                            }
-                            a.TempoF.Start();
-                            ProcessoFocus = a.Process;
-                        }
-                        lock (_lock)
-                        {
-                            if (Apps.Where(i=>i.Process==a.Process).Count() == 0)
-                                Apps.Add(a);
-                        }
-                        action = () => testo.AppendText("Nuova applicazione: " + a.Name + ".\n");
-                        Dispatcher.Invoke(action);
-                        if (!pronto)
-                        {
-                            pronto = true;
-                            lock (key)
-                                Monitor.Pulse(key);
-                        }
-                        break;
-                        //Aggiornamento di un'applicazione
-                        //Messaggio: len-'a'-JSON(app)
-                        case 'a':
-                            leggiStream(Stream, readBuffer, len);
-                            lettura = Encoding.Default.GetString(readBuffer);
-                            Array.Clear(readBuffer, 0, len);
-                            Applicazione app = JsonConvert.DeserializeObject<Applicazione>(lettura);
-                            if (app.IconLength != 0)
-                            {
-                                byte[] iconByte = new byte[app.IconLength];
-                                leggiStream(Stream, iconByte, app.IconLength);
-                                ottieniIcona(app, iconByte);
-                                Array.Clear(iconByte, 0, app.IconLength);
-                            }
-                            lock (_lock)
-                            {
-                                a = Apps.Where(i => i.Process == app.Process).Single();
-                                a.Name = app.Name;
-                                a.Icona = app.Icona;
-                            }
-                                if (app.Focus) // se ora ha il focus ma prima no
-                                {
-                                    if (!a.Focus)
+                                //Inserimento nuova applicazione
+                                //Messaggio: len-'a'-JSON(App)
+                                case 'n':
+                                    nBytes = 0;
+                                    string lettura = "";
+                                    string res = "";
+                                    do
                                     {
-                                        lock (_lock)
+                                        n = Stream.Read(readBuffer, nBytes, len);
+                                        len -= n;
+                                        nBytes += n;
+                                        res = Encoding.Default.GetString(readBuffer);
+                                        lettura += res;
+                                    } while (len > 0);
+                                    Array.Clear(readBuffer, 0, nBytes);
+                                    a = JsonConvert.DeserializeObject<Applicazione>(lettura);
+                                    if (a.IconLength != 0)
+                                    {
+                                        //if (Stream.DataAvailable)
+                                        //{
+                                            byte[] iconByte = new byte[a.IconLength];
+                                            nBytes = 0;
+                                            do
+                                            {
+                                                n = Stream.Read(iconByte, nBytes, a.IconLength);
+                                                a.IconLength -= n;
+                                                nBytes += n;
+                                            } while (a.IconLength > 0);
+                                            ottieniIcona(a, iconByte);
+                                            Array.Clear(iconByte, 0, a.IconLength);
+                                        //}
+                                    }
+                                    if (a.Focus)
+                                    {
+                                        if (ProcessoFocus != 0)
                                         {
-                                            Applicazione af = Apps.Where(i => i.Process == ProcessoFocus).Single();
-                                            af.Focus = false;
-                                            af.TempoF.Stop();
+                                            lock (_lock)
+                                            {
+                                                Apps.Where(i => i.Process == ProcessoFocus).Single().Focus = false;
+                                                Apps.Where(i => i.Process == ProcessoFocus).Single().TempoF.Stop();
+                                            }
                                         }
-                                    ProcessoFocus = a.Process;
+                                        a.TempoF.Start();
+                                        ProcessoFocus = a.Process;
+                                    }
+                                    lock (_lock)
+                                    {
+                                        if (Apps.Where(i=>i.Process==a.Process).Count() == 0)
+                                            Apps.Add(a);
+                                    }
+                                    action = () => testo.AppendText("Nuova applicazione: " + a.Name + ".\n");
+                                    Dispatcher.Invoke(action);
+                                    if (!pronto)
+                                    {
+                                        pronto = true;
+                                        lock (key)
+                                            Monitor.Pulse(key);
+                                    }
+                                    break;
+                                //Aggiornamento di un'applicazione
+                                //Messaggio: len-'a'-JSON(app)
+                                case 'a':
+                                    nBytes = 0;
+                                    lettura = "";
+                                    res = "";
+                                    do
+                                    {
+                                        n = Stream.Read(readBuffer, nBytes, len);
+                                        len -= n;
+                                        nBytes += n;
+                                        res = Encoding.Default.GetString(readBuffer);
+                                        lettura += res;
+                                    } while (len > 0);
+                                    Array.Clear(readBuffer, 0, nBytes);
+                                    Applicazione app = JsonConvert.DeserializeObject<Applicazione>(lettura);
+                                    if (app.IconLength != 0)
+                                    {
+                                        byte[] iconByte = new byte[app.IconLength];
+                                        nBytes = 0;
+                                        do
+                                        {
+                                            n = Stream.Read(iconByte, nBytes, app.IconLength);
+                                            app.IconLength -= n;
+                                            nBytes += n;
+                                        } while (app.IconLength > 0);
+                                        ottieniIcona(app, iconByte);
+                                        Array.Clear(iconByte, 0, app.IconLength);
+                                    }
+                                    lock (_lock)
+                                    {
+                                        a = Apps.Where(i => i.Process == app.Process).Single();
+                                        a.Name = app.Name;
+                                        a.Icona = app.Icona;
+                                    }
+                                    if (app.Focus) // se ora ha il focus ma prima no
+                                    {
+                                        if (!a.Focus)
+                                        {
+                                            lock (_lock)
+                                            {
+                                                Applicazione af = Apps.Where(i => i.Process == ProcessoFocus).Single();
+                                                af.Focus = false;
+                                                af.TempoF.Stop();
+                                            }
+                                            ProcessoFocus = a.Process;
+                                            a.Focus = true;
+                                            a.TempoF.Start();
+                                            action = () => testo.AppendText("Nuovo focus: " + a.Name + ".\n");
+                                            Dispatcher.Invoke(action);
+                                        }
+                                    }
+                                    action = () => testo.AppendText("Applicazione aggiornata: " + a.Name + ".\n");
+                                    Dispatcher.Invoke(action);
+                                    break;
+                                //Rimozione di un'applicazione
+                                //Messaggio: len-'r'-Codice processo App
+                                case 'r':
+                                    Stream.Read(readBuffer, 0, 4);
+                                    processo = BitConverter.ToUInt32(readBuffer, 0);
+                            
+                                    lock (_lock)
+                                    {
+                                        a = Apps.Where(i => i.Process == processo).Single();
+                                        if (a.Focus)
+                                        {
+                                            a.Focus = false;
+                                            a.TempoF.Stop();
+                                           ProcessoFocus = 0;
+                                        }
+                                        Apps.Remove(a);
+                                    }
+                                    action = () => testo.AppendText("Applicazione rimossa: " + a.Name + ".\n");
+                                    Dispatcher.Invoke(action);
+                                    Array.Clear(readBuffer, 0, 4);
+                                    break;
+                                //Focus cambiato
+                                //Messaggio: len-'f'-Codice processo App
+                                case 'f':
+                                    if (ProcessoFocus != 0)
+                                    {
+                                        lock(_lock)
+                                        {
+                                            a = Apps.Where(i => i.Process == ProcessoFocus).Single();
+                                           
+                                        }
+                                        a.Focus = false;
+                                        a.TempoF.Stop();
+
+                                    }
+                                    Stream.Read(readBuffer, 0, 4); 
+                                    processo = BitConverter.ToUInt32(readBuffer, 0);
+                                    
+                                    lock (_lock)
+                                    {
+                                        action = () => testo.AppendText("ProcessoF: " + ProcessoFocus + " \nProcesso: " + processo + ".\n");
+                                        Dispatcher.Invoke(action);
+                                        a = Apps.Where(i => i.Process == processo).Single();
+                                        
+                                    }
                                     a.Focus = true;
                                     a.TempoF.Start();
+                                    ProcessoFocus = processo;
                                     action = () => testo.AppendText("Nuovo focus: " + a.Name + ".\n");
                                     Dispatcher.Invoke(action);
-                                    }
-                                }
-                                action = () => testo.AppendText("Applicazione aggiornata: " + a.Name + ".\n");
-                                Dispatcher.Invoke(action);
-                                break;
-                    //Rimozione di un'applicazione
-                    //Messaggio: len-'r'-Codice processo App
-                    case 'r':
-                        leggiStream(Stream, readBuffer, 4);
-                        processo = BitConverter.ToUInt32(readBuffer, 0);
-                        lock (_lock)
-                        {
-                            a = Apps.Where(i => i.Process == processo).Single();
-                            if (a.Focus)
-                            {
-                                a.Focus = false;
-                                a.TempoF.Stop();
-                                ProcessoFocus = 0;
+                                    Array.Clear(readBuffer, 0, 4);
+                                    break;
+                                default:
+                                    break;
                             }
-                            Apps.Remove(a);
                         }
-                        action = () => testo.AppendText("Applicazione rimossa: " + a.Name + ".\n");
-                        Dispatcher.Invoke(action);
-                        Array.Clear(readBuffer, 0, 4);
-                        break;
-                    //Focus cambiato
-                    //Messaggio: len-'f'-Codice processo App
-                    case 'f':
-                        if (ProcessoFocus != 0)
-                        {
-                            lock(_lock)
-                            {
-                                a = Apps.Where(i => i.Process == ProcessoFocus).Single();
-                            }
-                            a.Focus = false;
-                            a.TempoF.Stop();
-                        }
-                        leggiStream(Stream, readBuffer, 4);
-                        processo = BitConverter.ToUInt32(readBuffer, 0);
-                        lock (_lock)
-                        {
-                                action = () => testo.AppendText("ProcessoF: " + ProcessoFocus + " \nProcesso: " + processo + ".\n");
-                                Dispatcher.Invoke(action);
-                                a = Apps.Where(i => i.Process == processo).Single();
-                        }
-                        a.Focus = true;
-                        a.TempoF.Start();
-                        ProcessoFocus = processo;
-                        action = () => testo.AppendText("Nuovo focus: " + a.Name + ".\n");
-                        Dispatcher.Invoke(action);
-                        Array.Clear(readBuffer, 0, 4);
-                        break;
-                    default:
-                        break;
                     }
                 }
                 return;
@@ -391,28 +413,17 @@ namespace Client
             }
         }
 
-        /// <summary>
-        /// La funzione legge dallo stream len bytes e li mette in readBuffer
-        /// </summary>
-        /// <param name="stream">Stream da cui leggere i dati</param>
-        /// <param name="readBuffer">Buffer su cui scrivere i dati letti</param>
-        /// <param name="len">Numero di byte da leggere</param>
         private void leggiStream(NetworkStream stream, byte[] readBuffer, int len)
         {
             int bytesLetti = 0;
             int bytesDaLeggere = len;
             while (bytesDaLeggere > 0)
             {
-                if (stream.CanRead)
-                {
-                    if (stream.DataAvailable)
-                    {
-                        int n = stream.Read(readBuffer, bytesLetti, bytesDaLeggere);
-                        bytesLetti += n;
-                        bytesDaLeggere -= n;
-                    }
-                }
+                int n = stream.Read(readBuffer, bytesLetti, bytesDaLeggere);
+                bytesLetti += n;
+                bytesDaLeggere -= n;
             }
+
         }
 
         private void ottieniIcona(Applicazione a, byte[] iconByte)

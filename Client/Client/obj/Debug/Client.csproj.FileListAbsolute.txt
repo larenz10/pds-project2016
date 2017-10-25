@@ -4,13 +4,11 @@ C:\Users\Lorenzo Ferrettino\Documents\GitHub\pds-hopeless\Client\Client\bin\Debu
 C:\Users\Lorenzo Ferrettino\Documents\GitHub\pds-hopeless\Client\Client\bin\Debug\Newtonsoft.Json.dll
 C:\Users\Lorenzo Ferrettino\Documents\GitHub\pds-hopeless\Client\Client\bin\Debug\Newtonsoft.Json.xml
 C:\Users\Lorenzo Ferrettino\Documents\GitHub\pds-hopeless\Client\Client\obj\Debug\MainWindow.g.cs
-C:\Users\Lorenzo Ferrettino\Documents\GitHub\pds-hopeless\Client\Client\obj\Debug\Window1.g.cs
 C:\Users\Lorenzo Ferrettino\Documents\GitHub\pds-hopeless\Client\Client\obj\Debug\App.g.cs
 C:\Users\Lorenzo Ferrettino\Documents\GitHub\pds-hopeless\Client\Client\obj\Debug\GeneratedInternalTypeHelper.g.cs
 C:\Users\Lorenzo Ferrettino\Documents\GitHub\pds-hopeless\Client\Client\obj\Debug\Client_MarkupCompile.cache
 C:\Users\Lorenzo Ferrettino\Documents\GitHub\pds-hopeless\Client\Client\obj\Debug\Client_MarkupCompile.lref
 C:\Users\Lorenzo Ferrettino\Documents\GitHub\pds-hopeless\Client\Client\obj\Debug\MainWindow.baml
-C:\Users\Lorenzo Ferrettino\Documents\GitHub\pds-hopeless\Client\Client\obj\Debug\Window1.baml
 C:\Users\Lorenzo Ferrettino\Documents\GitHub\pds-hopeless\Client\Client\obj\Debug\Client.g.resources
 C:\Users\Lorenzo Ferrettino\Documents\GitHub\pds-hopeless\Client\Client\obj\Debug\Client.Properties.Resources.resources
 C:\Users\Lorenzo Ferrettino\Documents\GitHub\pds-hopeless\Client\Client\obj\Debug\Client.csproj.GenerateResource.Cache
@@ -18,3 +16,19 @@ C:\Users\Lorenzo Ferrettino\Documents\GitHub\pds-hopeless\Client\Client\obj\Debu
 C:\Users\Lorenzo Ferrettino\Documents\GitHub\pds-hopeless\Client\Client\obj\Debug\Client.exe
 C:\Users\Lorenzo Ferrettino\Documents\GitHub\pds-hopeless\Client\Client\obj\Debug\Client.pdb
 C:\Users\Lorenzo Ferrettino\Documents\GitHub\pds-hopeless\Client\Client\obj\Debug\Client.csprojResolveAssemblyReference.cache
+C:\Users\Riccardo\Desktop\Client\Client\bin\Debug\Client.exe.config
+C:\Users\Riccardo\Desktop\Client\Client\obj\Debug\Client.exe
+C:\Users\Riccardo\Desktop\Client\Client\obj\Debug\Client.pdb
+C:\Users\Riccardo\Desktop\Client\Client\bin\Debug\Client.exe
+C:\Users\Riccardo\Desktop\Client\Client\bin\Debug\Client.pdb
+C:\Users\Riccardo\Desktop\Client\Client\bin\Debug\Newtonsoft.Json.dll
+C:\Users\Riccardo\Desktop\Client\Client\bin\Debug\Newtonsoft.Json.xml
+C:\Users\Riccardo\Desktop\Client\Client\obj\Debug\MainWindow.g.cs
+C:\Users\Riccardo\Desktop\Client\Client\obj\Debug\App.g.cs
+C:\Users\Riccardo\Desktop\Client\Client\obj\Debug\GeneratedInternalTypeHelper.g.cs
+C:\Users\Riccardo\Desktop\Client\Client\obj\Debug\Client_MarkupCompile.cache
+C:\Users\Riccardo\Desktop\Client\Client\obj\Debug\Client_MarkupCompile.lref
+C:\Users\Riccardo\Desktop\Client\Client\obj\Debug\MainWindow.baml
+C:\Users\Riccardo\Desktop\Client\Client\obj\Debug\Client.g.resources
+C:\Users\Riccardo\Desktop\Client\Client\obj\Debug\Client.Properties.Resources.resources
+C:\Users\Riccardo\Desktop\Client\Client\obj\Debug\Client.csproj.GenerateResource.Cache
