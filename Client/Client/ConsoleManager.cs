@@ -72,7 +72,7 @@ namespace Client
             {
                 var handle = GetConsoleWindow();
                 ShowWindow(handle, SW_SHOW);
-                Console.Clear();
+                //Console.Clear();
             }
             //#endif
         }

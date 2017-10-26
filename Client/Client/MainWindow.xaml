@@ -5,16 +5,16 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Client"
         xmlns:med="clr-namespace:System.Windows.Media"
-        Title="Client" Height="350" Width="730" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Auto" Background="White" Icon="icon.ico">
+        Title="Client" Height="400" Width="940" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Auto" Background="White" Icon="icon.ico" MinWidth="760" MinHeight="370">
     <Grid>
-        <Button x:Name="connetti" Content="Connetti" Margin="503,10,5,0" VerticalAlignment="Top" Height="23" Click="connetti_Click"/>
-        <TextBlock x:Name="textBlock" Margin="10,10,644,0" TextWrapping="Wrap" Text="Indirizzo" VerticalAlignment="Top" Height="23" FontSize="14"/>
-        <TextBox x:Name="indirizzo" Height="23" Margin="67,10,536,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" FontSize="14"/>
-        <TextBlock x:Name="textBlock1" Margin="186,10,490,0" TextWrapping="Wrap" Text="Porta" VerticalAlignment="Top" Height="23" FontSize="14" RenderTransformOrigin="0.719,0.55"/>
-        <TextBox x:Name="porta" Height="23" Margin="225,10,375,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" FontSize="14"/>
-        <TextBox x:Name="testo" Height="271" Margin="10,38,375,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" IsReadOnly="True" VerticalScrollBarVisibility="Auto"/>
-        <Button x:Name="invia" Content="Invia tasti all'app in focus" Margin="504,286,5,0" VerticalAlignment="Top" Height="23" Click="invia_Click"/>
-        <ListView x:Name="listView" Margin="352,38,5,33" Grid.Row="0" IsSynchronizedWithCurrentItem="True">
+        <Button x:Name="connetti" Content="Connetti" Margin="0,10,5,0" VerticalAlignment="Top" Height="23" Click="connetti_Click" HorizontalAlignment="Right" Width="150" MinWidth="150" MinHeight="23" MaxWidth="150" MaxHeight="23"/>
+        <TextBlock x:Name="textBlock" Margin="10,10,643,0" TextWrapping="Wrap" Text="Indirizzo" VerticalAlignment="Top" Height="23" FontSize="14" MaxWidth="57" MaxHeight="23" MinWidth="57" MinHeight="23" HorizontalAlignment="Left"/>
+        <TextBox x:Name="indirizzo" Height="23" Margin="67,10,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" FontSize="14" MaxWidth="119" MaxHeight="23" HorizontalAlignment="Left" Width="119" MinWidth="119" MinHeight="23"/>
+        <TextBlock x:Name="textBlock1" Margin="191,10,0,0" TextWrapping="Wrap" Text="Porta" VerticalAlignment="Top" Height="23" FontSize="14" RenderTransformOrigin="0.719,0.55" MaxWidth="34" MaxHeight="23" MinWidth="34" MinHeight="23" HorizontalAlignment="Left"/>
+        <TextBox x:Name="porta" Height="23" Margin="226,10,375,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" FontSize="14" MinWidth="119" MinHeight="23" MaxWidth="119" MaxHeight="23" HorizontalAlignment="Left"/>
+        <TextBox x:Name="testo" Margin="10,38,0,10" TextWrapping="Wrap" Text="" IsReadOnly="True" VerticalScrollBarVisibility="Auto" Width="450" MinWidth="335" MinHeight="271" HorizontalAlignment="Left"/>
+        <Button x:Name="invia" Content="Invia tasti all'app in focus" Margin="0,0,5,10" VerticalAlignment="Bottom" Height="23" Click="invia_Click" HorizontalAlignment="Right" Width="150" MinWidth="150" MinHeight="23" MaxWidth="150" MaxHeight="23"/>
+        <ListView x:Name="listView" Margin="465,38,5,38" Grid.Row="0" IsSynchronizedWithCurrentItem="True" MinWidth="365" MinHeight="248">
             <ListView.ItemContainerStyle>
                 <Style TargetType="ListViewItem">
                     <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
@@ -37,7 +37,13 @@
             <ListView.View>
                 <GridView x:Name="grdNames">
                     <GridViewColumn Header="Icona" CellTemplate="{StaticResource Template}"/>
-                    <GridViewColumn Header="Applicazione" DisplayMemberBinding="{Binding Name}" Width="174" />
+                    <GridViewColumn Header="Applicazione">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Name}" MinWidth="204"/>
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
                     <GridViewColumn Width="70" Header="Processo">
                         <GridViewColumn.CellTemplate>
                             <DataTemplate>
