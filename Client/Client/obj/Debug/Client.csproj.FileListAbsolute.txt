@@ -15,7 +15,6 @@ C:\Users\Lorenzo Ferrettino\Documents\GitHub\pds-hopeless\Client\Client\obj\Debu
 C:\Users\Lorenzo Ferrettino\Documents\GitHub\pds-hopeless\Client\Client\obj\Debug\Client.csproj.CoreCompileInputs.cache
 C:\Users\Lorenzo Ferrettino\Documents\GitHub\pds-hopeless\Client\Client\obj\Debug\Client.exe
 C:\Users\Lorenzo Ferrettino\Documents\GitHub\pds-hopeless\Client\Client\obj\Debug\Client.pdb
-C:\Users\Lorenzo Ferrettino\Documents\GitHub\pds-hopeless\Client\Client\obj\Debug\Client.csprojResolveAssemblyReference.cache
 C:\Users\Riccardo\Desktop\Client\Client\bin\Debug\Client.exe.config
 C:\Users\Riccardo\Desktop\Client\Client\obj\Debug\Client.exe
 C:\Users\Riccardo\Desktop\Client\Client\obj\Debug\Client.pdb
@@ -32,3 +31,4 @@ C:\Users\Riccardo\Desktop\Client\Client\obj\Debug\MainWindow.baml
 C:\Users\Riccardo\Desktop\Client\Client\obj\Debug\Client.g.resources
 C:\Users\Riccardo\Desktop\Client\Client\obj\Debug\Client.Properties.Resources.resources
 C:\Users\Riccardo\Desktop\Client\Client\obj\Debug\Client.csproj.GenerateResource.Cache
+C:\Users\Lorenzo Ferrettino\Documents\GitHub\pds-hopeless\Client\Client\obj\Debug\Client.csprojResolveAssemblyReference.cache
