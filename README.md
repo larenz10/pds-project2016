@@ -1,6 +1,6 @@
 # pds-project2016
 
-This repository contains the code I developed in C# to solve the assignment of "Programmazione di Sistema" (A.Y. 2015/2016), a course I attended in Politecnico di Torino.
+This repository contains the code I developed in C# to solve the assignment of "Programmazione di Sistema" (A.Y. 2015/2016), a course I attended at Politecnico di Torino.
 
 ## What the code contains
 
